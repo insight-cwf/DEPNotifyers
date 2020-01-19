@@ -430,7 +430,7 @@
 			<key>POSTINSTALL_PATH</key>
 			<dict>
 				<key>PATH</key>
-				<string>dev-post-install.sh</string>
+				<string>../jamf-dep-notify-post-install.sh</string>
 				<key>PATH_TYPE</key>
 				<integer>1</integer>
 			</dict>
@@ -677,7 +677,7 @@
 				</dict>
 			</array>
 			<key>NAME</key>
-			<string>test-Jamf-DEPNotify-1.1.4</string>
+			<string>Jamf-DEPNotify-1.1.4</string>
 			<key>PAYLOAD_ONLY</key>
 			<false/>
 		</dict>
