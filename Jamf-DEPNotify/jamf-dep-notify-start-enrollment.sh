@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # GitHub: @captam3rica
-VERSION=1.2.1
+VERSION=1.3.0
 
 ###############################################################################
 #
@@ -89,7 +89,7 @@ VERSION=1.2.1
 #       - Added Jamf policy to policy array that creates a local administrator
 #         account on the Mac.
 #
-#   Version - 1.1
+#   Version - v1.1
 #
 #       - Added ability to update the username assigned in Jamf computer
 #         inventory record.
@@ -98,19 +98,24 @@ VERSION=1.2.1
 #           - This functionality can be toggled on with the variable
 #             UPDATE_USERNAME_INVENTORY_RECORD below.
 #
-#   Version 1.2
+#   Version - v1.2
 #
 #       - Added the ability to enable cheching for Jamf Connect Login with the
 #         JAMF_CONNECT_ENABLED varilble. This variable is assigned to the Jamf
 #         script parameter option number 11. Set the option to true else it
 #         will remain false and assume that we are not using Jamf Connect.
 #
-#   Version 1.2.1
+#   Version - v1.2.1
 #
 #       - Refactoring to make the script a little more portable.
 #       - Added additional functionality to the is_jamf_enrollment_complete
 #         function to check for the jamf.log then look in the log to see if
 #         the enrollmentComplete string is present.
+#
+#   Version - v1.3.0
+#
+#       - Added ability to bind the Mac to an AD domain if the BIND TO ACTIVE
+#         DIRECOTRY section below for more details.
 #
 ###############################################################################
 
@@ -167,6 +172,16 @@ JAMF_CONNECT_ENABLED=false
 # the script will update the Jamf Pro inventory record with the current local
 # username. Otherwise, this information is logged for later review.
 UPDATE_USERNAME_INVENTORY_RECORD=false
+
+
+################################################################################
+# BIND TO ACTIVE DIRECTORY
+################################################################################
+# This functionality requires that a Directory Binding policy be created in
+# Jamf. This policy must have a customer trigger set to "directory-binding",
+# and an "Execution Frequency" set to "Ongoing". Once those items are in place
+# set the DIRECTORY_BINDING_ENABLED varilable below to true.
+DIRECTORY_BINDING_ENABLED=false
 
 
 ################################################################################
@@ -1368,6 +1383,13 @@ update_username_in_jamf_cloud() {
 }
 
 
+directory_binding (){
+    # Calls Jamf policy to bind the Mac to AD.
+    logging "Enrollment Script: Calling Jamf policy to bind Mac to AD."
+    "$JAMF_BINARY" policy -event directory-binding
+}
+
+
 enable_location_services() {
     # Enable location services
     logging "Enrollment Script: locationd: Enableing Location services ..."
@@ -1438,8 +1460,8 @@ dep_notify_cleanup() {
     # are left behind by the enrollment proces.
     # This script can be found in the Jamf-DEPNotify repository.
 
-    logging "Enrollment Script: jamf: Calling policy: dep-notify-cleanup"
-    "$JAMF_BINARY" policy -event dep-notify-cleanup
+    logging "Enrollment Script: jamf: Calling policy: depnotify-cleanup"
+    "$JAMF_BINARY" policy -event depnotify-cleanup
 }
 
 
@@ -1642,6 +1664,13 @@ main() {
 
     if [ "$UPDATE_USERNAME_INVENTORY_RECORD" = true ]; then
         # If this is not enabled then there is no reason to run the function.
+        update_username_in_jamf_cloud
+    fi
+
+    if [ "$DIRECTORY_BINDING_ENABLED" = true ]; then
+        # If the seconfdary option DIRECTORY_BINDING_ENABLED is set to true.
+        # Call a Jamf Pro policy to bind the Mac to AD during the enrollment
+        # process.
         update_username_in_jamf_cloud
     fi
 
