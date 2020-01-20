@@ -17,6 +17,8 @@ Use these scripts to assist with deployment and execution of DEPNotify in a Jamf
 
 Give the project a **Name**, set the path to **Relative to Project**, and select a **Reference Folder** (The place where you want to store the project.)
 
+Signing the package is not necessary, but this is something that Apple will be requiring in later releases of macOS.
+
 ![](Screenshots/packages_project_tab.png)
 
 
@@ -36,6 +38,7 @@ On the Scripts tab drag the `jamf-dep-notify-post-install.sh` script into the sq
 Drag the original [DEPNotify app](https://gitlab.com/Mactroll/DEPNotify) installer into the **Additional Resources** area, and make sure that the **Reference** is set to **Relative to Project**.
 
 ![](Screenshots/packages_scripts_tab_02.png)
+
 
 ### Jamf DEPNotify Start Enrollment
 
