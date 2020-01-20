@@ -54,6 +54,8 @@ Once the package is created upload it to Jamf. Then add the package to your Pre-
 
 ## Jamf Policies
 
+**NOTE:** Make sure to upload `jamf-dep-notify-start-enrollment.sh` and `jamf-dep-notify-cleanup.sh` to Jamf as Scripts before creating the policies.
+
 ### Jamf DEPNotify Start Enrollment
 
 **General settings tab**
@@ -68,7 +70,11 @@ Once the package is created upload it to Jamf. Then add the package to your Pre-
 
 You can scope the policy to **All Computers/All Users** or create a Smart Group with the following criteria and scope this policy to that smart group.
 
+_Smart Group_
+
 ![](Screenshots/smart_group_has_jamf_pppc_profile.png)
+
+_Scope_
 
 ![](Screenshots/start_depnotify_policy_scope.png)
 
