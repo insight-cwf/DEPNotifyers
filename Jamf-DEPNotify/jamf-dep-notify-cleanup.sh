@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=1.1
+VERSION=2.0
 
 ###############################################################################
 #
@@ -31,7 +31,7 @@ VERSION=1.1
 #
 #   LaunchDaemon
 #
-#       - /Library/LaunchDaemons/com.captam3rica.dep-notify-enrollment.plist
+#       - /Library/LaunchDaemons/com.captam3rica.dep-notify-start- enrollment.plist
 #
 #   Applications:
 #
@@ -45,12 +45,16 @@ VERSION=1.1
 #
 #       - Added addtional logging for better clarity.
 #
+#   v2.0
+#
+#       - Updated to script to unload the LaunchDaemon before removing.
+#
 ###############################################################################
 
 
 DEP_NOTIFY_TMP_DIR="/var/tmp"
 DEP_NOTIFY_SCRIPTS_DIR="/tmp"
-DEP_NOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-enrollment.plist"
+DEP_NOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-start-enrollment.plist"
 DEP_NOTIFY_APP="/Applications/Utilities/DEPNotify.app"
 
 
@@ -63,40 +67,79 @@ logging () {
     /bin/echo "$DATE"$1 >> $LOG_PATH
 }
 
-logging "Starting DEPNotify cleanup"
-logging "Script version $VERSION"
 
-for thing in \
-    "$DEP_NOTIFY_TMP_DIR/depnotify.log" \
-    "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.err" \
-    "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.out" \
-    "$DEP_NOTIFY_TMP_DIR/depnotifyDebug.log" \
-    "$DEP_NOTIFY_TMP_DIR/com.depnotify.provisioning.done" \
-    "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-installer.sh" \
-    "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-uninstaller.sh" \
-    "$DEP_NOTIFY_DAEMON" \
-    "$DEP_NOTIFY_APP"; do
-    # Loop through and remove all files accociated with DEPNotify.
+remove_depnotify_daemon (){
+    # Unload and remove the LaunchDaemon
 
-    if [ -e "$thing" ] || [ -d "$thing" ]; then
-        # If a DEPNotify log file or dir exists remove it.
+    if [ -e "$DEP_NOTIFY_DAEMON" ]; then
+        # The LaunchDaemon file exists
 
-        logging "Attempting to remove $thing ..."
+        IS_LOADED=$(/bin/launchctl list | \
+            /usr/bin/grep "dep-notify-start-enrollment" | \
+            /usr/bin/awk '{print $3}')
 
-        /bin/rm -R "$thing"
-
-        RETURN="$?"
-
-        if [ "$RETURN" -ne 0 ]; then
-            # Log that an error occured while removing a file.
-            logging "ERROR: Unable to remove $thing"
-            return "$RETURN"
+        if [ -n "$IS_LOADED" ]; then
+            # Unload the daemon
+            logging "DEPNotify Cleanup: Unloading DEPNotify LaunchDaemon"
+            /bin/launchctl unload "$DEP_NOTIFY_DAEMON"
         fi
 
-    else
-        # File or directory not found.
-        logging "$thing not found ..."
-
+        logging "DEPNotify Cleanup: Removing DEPNotify LaunchDaemon"
+        /bin/rm -R "$DEP_NOTIFY_DAEMON"
     fi
+}
 
-done
+
+remove_depnotify_collateral (){
+    # Remove DEPNotify dependencies
+
+    for thing in \
+        "$DEP_NOTIFY_TMP_DIR/depnotify.log" \
+        "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.err" \
+        "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.out" \
+        "$DEP_NOTIFY_TMP_DIR/depnotifyDebug.log" \
+        "$DEP_NOTIFY_TMP_DIR/com.depnotify.provisioning.done" \
+        "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-installer.sh" \
+        "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-uninstaller.sh" \
+        "$DEP_NOTIFY_APP"; do
+        # Loop through and remove all files accociated with DEPNotify.
+
+        if [ -e "$thing" ] || [ -d "$thing" ]; then
+            # If a DEPNotify log file or dir exists remove it.
+
+            logging "Attempting to remove $thing ..."
+
+            /bin/rm -R "$thing"
+
+            RETURN="$?"
+
+            if [ "$RETURN" -ne 0 ]; then
+                # Log that an error occured while removing a file.
+                logging "ERROR: Unable to remove $thing"
+                return "$RETURN"
+            fi
+
+        else
+            # File or directory not found.
+            logging "$thing not found ..."
+
+        fi
+
+    done
+}
+
+
+main (){
+    # Main script that calls everyting else.
+
+    logging "-- Start DEPNotify cleanup --"
+    logging "Script version $VERSION"
+
+    remove_depnotify_daemon
+    remove_depnotify_collateral
+
+    logging "-- End DEPNotify Cleanup --"
+}
+
+# Call main
+main
