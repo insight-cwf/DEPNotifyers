@@ -69,4 +69,4 @@ General settings tab
 
 Scripts payload tab
 
-![](Screenshots/dep_notify_cleanup_scripts_payload.png)
+![](Screenshots/dep_notify_cleanup_script_payload.png)
