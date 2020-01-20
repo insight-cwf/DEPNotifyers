@@ -9,13 +9,11 @@ Use these scripts to assist with deployment and execution of DEPNotify in a Jamf
 - `jamf-dep-notify-cleanup.sh` - Use this script in a policy called by the `jamf-dep-notiy-start-enrollment` policy. Removes the DEPNotify application and all of its dependencies.
 
 
-## Jamf Policies
-
-### Jamf DEPNotify Re-Package
+## Jamf DEPNotify Re-Package
 
 This example uses [Packages](http://s.sudre.free.fr/Software/Packages/about.html) to repackage the DEPNotify app.
 
-#### Project Tab
+### Project Tab
 
 Give the project a **Name**, set the path to **Relative to Project**, and select a **Reference Folder** (The place where you want to store the project.)
 
@@ -24,14 +22,14 @@ Signing the package is not necessary, but this is something that Apple will be r
 ![](Screenshots/packages_project_tab.png)
 
 
-#### Settings Tab
+### Settings Tab
 
 Set the **identifier** and a version number on the Settings tab if you wish. I like to set the version number to the version of the original application that I am working with. In this case DENotify is on 1.1.5.
 
 ![](Screenshots/packages_settings_tab.png)
 
 
-#### Scripts Tab
+### Scripts Tab
 
 On the Scripts tab drag the `jamf-dep-notify-post-install.sh` script into the square. Make sure that the **R** for Relative to Project opation is selected underneath the script.
 
@@ -41,6 +39,8 @@ Drag the original [DEPNotify app](https://gitlab.com/Mactroll/DEPNotify) install
 
 ![](Screenshots/packages_scripts_tab_02.png)
 
+
+## Jamf Policies
 
 ### Jamf DEPNotify Start Enrollment
 
