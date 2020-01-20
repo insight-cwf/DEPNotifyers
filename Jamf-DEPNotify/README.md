@@ -56,17 +56,29 @@ Once the package is created upload it to Jamf. Then add the package to your Pre-
 
 ### Jamf DEPNotify Start Enrollment
 
-Policy options for the Enrollment Script
+**General settings tab**
 
-![](Screenshots/dep_notify_enrollment_script_policy_options.png)
+![](Screenshots/start_depnotify_policy_general.png)
+
+**Scripts payload tag**
+
+![](Screenshots/start_depnotify_policy_scripts.png)
+
+**Policy Scope**
+
+You can scope the policy to **All Computers/All Users** or create a Smart Group with the following criteria and scope this policy to that smart group.
+
+![](Screenshots/smart_group_has_jamf_pppc_profile.png)
+
+![](Screenshots/start_depnotify_policy_scope.png)
 
 
 ### Jamf DEPNotify Cleanup
 
-General settings tab
+**General settings tab**
 
 ![](Screenshots/dep_notify_cleanup_general_settings.png)
 
-Scripts payload tab
+**Scripts payload tab**
 
 ![](Screenshots/dep_notify_cleanup_script_payload.png)
