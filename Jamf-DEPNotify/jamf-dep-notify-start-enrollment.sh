@@ -858,7 +858,7 @@ is_dep_notify_enrollment_daemon_loaded() {
     logging "Enrollment Script: Checking to see if the DEPNotify LaunchDaemon is loaded."
 
     DAEMON_STATUS=$(/bin/launchctl list | \
-        /usr/bin/grep "dep-notify-enrollment" | \
+        /usr/bin/grep "dep-notify-start-enrollment" | \
         /usr/bin/awk '{print $3}')
 
     if [ -n "$DAEMON_STATUS" ]; then
