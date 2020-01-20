@@ -1,4 +1,4 @@
-# Jamf DEPNotify Scripts
+# Jamf DEPNotify
 
 Use these scripts to assist with deployment and execution of DEPNotify in a Jamf MDM environment.
 
@@ -10,6 +10,32 @@ Use these scripts to assist with deployment and execution of DEPNotify in a Jamf
 
 
 ## Jamf Policies
+
+### Jamf DEPNotify Re-Package
+
+#### Project Tab
+
+Give the project a **Name**, set the path to **Relative to Project**, and select a **Reference Folder** (The place where you want to store the project.)
+
+![](Screenshots/packages_project_tab.png)
+
+
+#### Settings Tab
+
+Set the **identifier** on the Settings tab if you wish.
+
+![](Screenshots/packages_settings_tab.png)
+
+
+#### Scripts Tab
+
+On the Scripts tab drag the `jamf-dep-notify-post-install.sh` script into the square. Make sure that the **R** for Relative to Project opation is selected underneath the script.
+
+![](Screenshots/packages_scripts_tab_01.png)
+
+Drag the original [DEPNotify app](https://gitlab.com/Mactroll/DEPNotify) installer into the **Additional Resources** area, and make sure that the **Reference** is set to **Relative to Project**.
+
+![](Screenshots/packages_scripts_tab_02.png)
 
 ### Jamf DEPNotify Start Enrollment
 
