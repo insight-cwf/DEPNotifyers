@@ -4,30 +4,37 @@ VERSION=2.1
 
 ###############################################################################
 #
-#   Removes the files and directories left behind by DEPNotify once the device
-#   setup is complete. Then, removes the DEPNotify application its self.
+#   A script to remove the files and directories left behind by DEPNotify once
+#   the device setup is complete. Then, removes the DEPNotify application its
+#   self.
 #
-#   This script can be added to the JamfCloud console as a script and called
-#   within the jamf-dep-notify-enrollment script typically towards the bottom
-#   of the main function once all application policies finish.
+#   This script can be added to the JamfCloud console as a script policy and
+#   called within the jamf-dep-notify-enrollment script typically towards the
+#   bottom of the main function once all application policies finish.
 #
 #   NOTE: The package used to install DEPNotify will not need to be
 #         manually removed because the Packages.app will build a tmp
 #         directory to install the pacakge from and will unmount it once
 #         the insall is complete. :)
 #
+#   Plist:
+#
+#       - /Users/username/Library/Preferences/menu.nomad.DEPNotify.plist
+#
 #   Logs:
 #
 #       - /var/tmp/depnotify.log
-#       - /var/tmp/dep-notify-enrollment-installer.sh.err
-#       - /var/tmp/dep-notify-enrollment-installer.sh.out
+#       - /var/tmp/dep-notify-start-enrollment-installer.sh.err
+#       - /var/tmp/dep-notify-start-enrollment-installer.sh.out
 #       - /var/tmp/depnotifyDebug.log
 #       - /var/tmp/com.depnotify.provisioning.done
+#       - /var/tmp/com.depnotify.provisioning.restart
+#       = /var/tmp/com.depnotify.registration.done
+#       - /var/tmp/com.depnotify.agreement.done
 #
 #   Scripts
 #
-#       - /tmp/dep-notify-enrollment-installer.sh
-#       - /tmp/dep-notify-enrollmnet-uninstaller.sh
+#       - /tmp/dep-notify-start-enrollment-installer.sh
 #
 #   LaunchDaemon
 #
@@ -36,6 +43,10 @@ VERSION=2.1
 #   Applications:
 #
 #       - /Applications/Utilities/DEPNotify.app
+#
+#   Misc:
+#
+#       - /Users/Shared/eula.txt
 #
 ###############################################################################
 #
@@ -55,7 +66,7 @@ VERSION=2.1
 #       - Added a few more default DEPNotify files that are installed by the
 #         DEPNotify app.
 #
-###############################################################################
+#####################################################################captam3rica
 
 
 # Default DEPNotify file locations
@@ -74,8 +85,8 @@ DEPNOTIFY_EULA_TXT_FILE="/Users/Shared/eula.txt"
 DEPNOTIFY_SCRIPTS_DIR="/tmp"
 DEPNOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-start-enrollment.plist"
 DEPNOTIFY_ENROLLMENT_STARTER="$DEPNOTIFY_SCRIPTS_DIR/dep-notify-start-enrollment-installer.sh"
-DEPNOTIFY_INST_ERR="$DEPNOTIFY_TMP/dep-notify-enrollment-installer.sh.err"
-DEPNOTIFY_INST_OUT="$DEPNOTIFY_TMP/dep-notify-enrollment-installer.sh.out"
+DEPNOTIFY_INST_ERR="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.err"
+DEPNOTIFY_INST_OUT="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.out"
 
 
 logging () {
