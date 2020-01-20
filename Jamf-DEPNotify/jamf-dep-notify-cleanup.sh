@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=2.0
+VERSION=2.1
 
 ###############################################################################
 #
@@ -49,13 +49,33 @@ VERSION=2.0
 #
 #       - Updated to script to unload the LaunchDaemon before removing.
 #
+#   v2.1
+#
+#       - Updated logging.
+#       - Added a few more default DEPNotify files that are installed by the
+#         DEPNotify app.
+#
 ###############################################################################
 
 
-DEP_NOTIFY_TMP_DIR="/var/tmp"
-DEP_NOTIFY_SCRIPTS_DIR="/tmp"
-DEP_NOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-start-enrollment.plist"
-DEP_NOTIFY_APP="/Applications/Utilities/DEPNotify.app"
+# Default DEPNotify file locations
+DEPNOTIFY_APP="/Applications/Utilities/DEPNotify.app"
+DEPNOTIFY_NEW_PLIST="/Users/username/Library/Preferences/menu.nomad.DEPNotify.plist"
+DEPNOTIFY_TMP="/var/tmp"
+DEPNOTIFY_LOG="$DEPNOTIFY_TMP/depnotify.log"
+DEPNOTIFY_DEBUG="$DEPNOTIFY_TMP/depnotifyDebug.log"
+DEPNOTIFY_DONE="$DEPNOTIFY_TMP/com.depnotify.provisioning.done"
+DEPNOTIFY_RESTART="$DEPNOTIFY_TMP/com.depnotify.provisioning.restart"
+DEPNOTIFY_AGR_DONE="$DEPNOTIFY_TMP/com.depnotify.agreement.done"
+DEPNOTIFY_REG_DONE="$DEPNOTIFY_TMP/com.depnotify.registration.done"
+DEPNOTIFY_EULA_TXT_FILE="/Users/Shared/eula.txt"
+
+# Re-pacakged DEPNotify post-install script file locations
+DEPNOTIFY_SCRIPTS_DIR="/tmp"
+DEPNOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-start-enrollment.plist"
+DEPNOTIFY_ENROLLMENT_STARTER="$DEPNOTIFY_SCRIPTS_DIR/dep-notify-start-enrollment-installer.sh"
+DEPNOTIFY_INST_ERR="$DEPNOTIFY_TMP/dep-notify-enrollment-installer.sh.err"
+DEPNOTIFY_INST_OUT="$DEPNOTIFY_TMP/dep-notify-enrollment-installer.sh.out"
 
 
 logging () {
@@ -71,7 +91,7 @@ logging () {
 remove_depnotify_daemon (){
     # Unload and remove the LaunchDaemon
 
-    if [ -e "$DEP_NOTIFY_DAEMON" ]; then
+    if [ -e "$DEPNOTIFY_DAEMON" ]; then
         # The LaunchDaemon file exists
 
         IS_LOADED=$(/bin/launchctl list | \
@@ -81,33 +101,40 @@ remove_depnotify_daemon (){
         if [ -n "$IS_LOADED" ]; then
             # Unload the daemon
             logging "DEPNotify Cleanup: Unloading DEPNotify LaunchDaemon"
-            /bin/launchctl unload "$DEP_NOTIFY_DAEMON"
+            /bin/launchctl unload "$DEPNOTIFY_DAEMON"
         fi
 
         logging "DEPNotify Cleanup: Removing DEPNotify LaunchDaemon"
-        /bin/rm -R "$DEP_NOTIFY_DAEMON"
+        /bin/rm -R "$DEPNOTIFY_DAEMON"
+
+    else
+        logging "DEPNotify Cleanup: Daemon not installed."
+
     fi
 }
 
 
 remove_depnotify_collateral (){
-    # Remove DEPNotify dependencies
+    # Remove DEPNotify files
 
+    # Loop through and remove all files accociated with DEPNotify.
     for thing in \
-        "$DEP_NOTIFY_TMP_DIR/depnotify.log" \
-        "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.err" \
-        "$DEP_NOTIFY_TMP_DIR/dep-notify-enrollment-installer.sh.out" \
-        "$DEP_NOTIFY_TMP_DIR/depnotifyDebug.log" \
-        "$DEP_NOTIFY_TMP_DIR/com.depnotify.provisioning.done" \
-        "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-installer.sh" \
-        "$DEP_NOTIFY_SCRIPTS_DIR/dep-notify-enrollment-uninstaller.sh" \
-        "$DEP_NOTIFY_APP"; do
-        # Loop through and remove all files accociated with DEPNotify.
+        ${DEPNOTIFY_APP} \
+        ${DEPNOTIFY_LOG} \
+        ${DEPNOTIFY_DEBUG} \
+        ${DEPNOTIFY_DONE} \
+        ${DEPNOTIFY_RESTART} \
+        ${DEPNOTIFY_AGR_DONE} \
+        ${DEPNOTIFY_REG_DONE} \
+        ${DEPNOTIFY_EULA_TXT_FILE} \
+        ${DEPNOTIFY_ENROLLMENT_STARTER} \
+        ${DEPNOTIFY_INST_ERR} \
+        ${DEPNOTIFY_INST_OUT}; do
 
         if [ -e "$thing" ] || [ -d "$thing" ]; then
             # If a DEPNotify log file or dir exists remove it.
 
-            logging "Attempting to remove $thing ..."
+            logging "DEPNotify Cleanup: Attempting to remove $thing ..."
 
             /bin/rm -R "$thing"
 
@@ -115,13 +142,13 @@ remove_depnotify_collateral (){
 
             if [ "$RETURN" -ne 0 ]; then
                 # Log that an error occured while removing a file.
-                logging "ERROR: Unable to remove $thing"
+                logging "DEPNotify Cleanup: ERROR: Unable to remove $thing"
                 return "$RETURN"
             fi
 
         else
             # File or directory not found.
-            logging "$thing not found ..."
+            logging "DEPNotify Cleanup: $thing not found ..."
 
         fi
 
@@ -133,7 +160,7 @@ main (){
     # Main script that calls everyting else.
 
     logging "-- Start DEPNotify cleanup --"
-    logging "Script version $VERSION"
+    logging "DEPNotify Cleanup: Script version $VERSION"
 
     remove_depnotify_daemon
     remove_depnotify_collateral
