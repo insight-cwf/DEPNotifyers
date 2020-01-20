@@ -66,3 +66,7 @@ Policy options for the Enrollment Script
 General settings tab
 
 ![](Screenshots/dep_notify_cleanup_general_settings.png)
+
+Scripts payload tab
+
+![](Screenshots/dep_notify_cleanup_scripts_payload.png)
