@@ -80,7 +80,7 @@
 HERE=$(/usr/bin/dirname "$0")
 
 # Update this when the DEPNotify installer package is updated.
-DEPNOTIFY_PKG_NAME="DEPNotify-1.1.4.pkg"
+DEPNOTIFY_PKG_NAME="DEPNotify-1.1.5.pkg"
 
 # You can change any of these:
 INSTALLER_BASE_STRING="dep-notify-start-enrollment"
