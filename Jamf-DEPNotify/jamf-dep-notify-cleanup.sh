@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=2.1
+VERSION=2.1.1
 
 ###############################################################################
 #
@@ -66,6 +66,11 @@ VERSION=2.1
 #       - Added a few more default DEPNotify files that are installed by the
 #         DEPNotify app.
 #
+#   v2.1.1
+#
+#       - Added a function that waits for the user to click the "Get Started"
+#         button.
+#
 #####################################################################captam3rica
 
 
@@ -98,6 +103,16 @@ logging () {
     /bin/echo "$DATE"$1 >> $LOG_PATH
 }
 
+
+wait_for_depnotify_done (){
+    # Wait for the user to press the Get Started button.
+    until [ -f "$DEPNOTIFY_DONE" ]; do
+        logging "DEPNotify Cleanup: Waiting for $DEPNOTIFY_DONE"
+        logging "DEPNotify Cleanup: The user has not clicked Get Started ..."
+        logging "DEPNotify Cleanup: Waiting 1 second ..."
+        /bin/sleep 1
+    done
+}
 
 remove_depnotify_daemon (){
     # Unload and remove the LaunchDaemon
@@ -133,14 +148,14 @@ remove_depnotify_collateral (){
         ${DEPNOTIFY_APP} \
         ${DEPNOTIFY_LOG} \
         ${DEPNOTIFY_DEBUG} \
-        ${DEPNOTIFY_DONE} \
         ${DEPNOTIFY_RESTART} \
         ${DEPNOTIFY_AGR_DONE} \
         ${DEPNOTIFY_REG_DONE} \
         ${DEPNOTIFY_EULA_TXT_FILE} \
         ${DEPNOTIFY_ENROLLMENT_STARTER} \
         ${DEPNOTIFY_INST_ERR} \
-        ${DEPNOTIFY_INST_OUT}; do
+        ${DEPNOTIFY_INST_OUT} \
+        ${DEPNOTIFY_DONE}; do
 
         if [ -e "$thing" ] || [ -d "$thing" ]; then
             # If a DEPNotify log file or dir exists remove it.
@@ -173,6 +188,7 @@ main (){
     logging "-- Start DEPNotify cleanup --"
     logging "DEPNotify Cleanup: Script version $VERSION"
 
+    wait_for_depnotify_done
     remove_depnotify_daemon
     remove_depnotify_collateral
 
