@@ -13,6 +13,8 @@ Use these scripts to assist with deployment and execution of DEPNotify in a Jamf
 
 ### Jamf DEPNotify Re-Package
 
+This example uses [Packages](http://s.sudre.free.fr/Software/Packages/about.html) to repackage the DEPNotify app.
+
 #### Project Tab
 
 Give the project a **Name**, set the path to **Relative to Project**, and select a **Reference Folder** (The place where you want to store the project.)
@@ -24,7 +26,7 @@ Signing the package is not necessary, but this is something that Apple will be r
 
 #### Settings Tab
 
-Set the **identifier** on the Settings tab if you wish.
+Set the **identifier** and a version number on the Settings tab if you wish. I like to set the version number to the version of the original application that I am working with. In this case DENotify is on 1.1.5.
 
 ![](Screenshots/packages_settings_tab.png)
 
