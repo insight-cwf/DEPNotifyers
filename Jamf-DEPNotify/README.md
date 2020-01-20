@@ -60,9 +60,9 @@ Once the package is created upload it to Jamf. Then add the package to your Pre-
 
 ![](Screenshots/start_depnotify_policy_general.png)
 
-**Scripts payload tag**
+**Scripts payload tab**
 
-![](Screenshots/start_depnotify_policy_scripts.png)
+![](Screenshots/start_depnotify_policy_script.png)
 
 **Policy Scope**
 
