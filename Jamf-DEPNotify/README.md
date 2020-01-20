@@ -17,7 +17,7 @@ This example uses [Packages](http://s.sudre.free.fr/Software/Packages/about.html
 
 Give the project a **Name**, set the path to **Relative to Project**, and select a **Reference Folder** (The place where you want to store the project.)
 
-Signing the package is not necessary, but this is something that Apple will be requiring in later releases of macOS.
+Signing the package is necessary. As a part of this process the package is uploaded to Jamf and added to a Prestage Enrollment profile. The package needs to be signed inorder to use it in a Jamf Prestage Enrollment profile.
 
 ![](Screenshots/packages_project_tab.png)
 
@@ -38,6 +38,18 @@ On the Scripts tab drag the `jamf-dep-notify-post-install.sh` script into the sq
 Drag the original [DEPNotify app](https://gitlab.com/Mactroll/DEPNotify) installer into the **Additional Resources** area, and make sure that the **Reference** is set to **Relative to Project**.
 
 ![](Screenshots/packages_scripts_tab_02.png)
+
+
+### Build the Package
+
+Once everything is in the new package press **Command + S** to save your work. Then, press **Command + B** to build the package.
+
+
+### Upload the Package to Jamf
+
+Once the package is created upload it to Jamf. Then add the package to your Pre-Stage Enrollment profile.
+
+![](Screenshots/prestage_enrollment_package.png)
 
 
 ## Jamf Policies
