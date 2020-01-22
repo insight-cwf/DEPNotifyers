@@ -58,7 +58,7 @@ VERSION=2.1.1
 #
 #   v2.0
 #
-#       - Updated to script to unload the LaunchDaemon before removing.
+#       - Updated to script to remove the LaunchDaemon.
 #
 #   v2.1
 #
@@ -119,16 +119,6 @@ remove_depnotify_daemon (){
 
     if [ -e "$DEPNOTIFY_DAEMON" ]; then
         # The LaunchDaemon file exists
-
-        IS_LOADED=$(/bin/launchctl list | \
-            /usr/bin/grep "dep-notify-start-enrollment" | \
-            /usr/bin/awk '{print $3}')
-
-        if [ -n "$IS_LOADED" ]; then
-            # Unload the daemon
-            logging "DEPNotify Cleanup: Unloading DEPNotify LaunchDaemon"
-            /bin/launchctl unload "$DEPNOTIFY_DAEMON"
-        fi
 
         logging "DEPNotify Cleanup: Removing DEPNotify LaunchDaemon"
         /bin/rm -R "$DEPNOTIFY_DAEMON"
