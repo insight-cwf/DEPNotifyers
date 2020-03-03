@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # GitHub: @captam3rica
-VERSION=1.3.0
+VERSION=2.0.0
 
 ###############################################################################
 #
@@ -35,87 +35,7 @@ VERSION=1.3.0
 #
 #   CHANGELOG
 #
-#   Version - v1.0.0
-#
-#       - Modified from Jamf's DEPNotify-Starter script found here
-#         https://github.com/jamf/DEPNotify-Starter
-#       - Initial release
-#       - Converted a number of the features in this script to functions.
-#       - A secondary log file is generated at /Library/Logs
-#           - enrollment-<date>.log
-#
-#   Version - v1.0.1
-#
-#       - Added check within the check_jamf_connect_login function to attempt
-#         an installation of Jamf Connect Login if after 10 seconds the Jamf
-#         Connect Login binary is not found.
-#
-#   Version - v1.0.2
-#
-#       - Moved the policy array section closer to the top of the script to
-#         make it a little easier to modify later.
-#
-#   Version - v1.0.3
-#
-#       - Added functionality to rename Mac
-#       - Added function that calls jamf recon
-#       - Added DEPNotiy status for FaultVault check and submitting device
-#         inventory to Jamf console.
-#
-#   Version - v1.0.4
-#
-#       - Added fix for Wi-Fi switching over before the end of enrollment.
-#           - Added funtion to create an enrollment complete stub file. Once the
-#             stub is laid down the Mac will check in.
-#           - Added an accompanying Extension attribute that checks for the
-#             enrollment complete stub.
-#           - The Mac will then be moved to an  Ernollment Complete smart
-#             group. This Smart group has the SCEP/Wi-Fi/Certs configuration
-#             profile Scoped to it.
-#           - This is all in an effort to control when the configuration profile
-#             is installed on the device.
-#
-#   Version - v1.0.5
-#
-#       - Added ability to cleanup DEPNotify and the dependencies that are left
-#         behind once the deployment process is over.
-#       - calls a Jamf Pro policy containing a script
-#
-#   Version - v1.0.6
-#
-#       - Additional code refactoring done.
-#       - Added ability to check for the dep-notify-enrollment daemon to see
-#         if it is running before starting the DEPNotify process.
-#       - Added Jamf policy to policy array that creates a local administrator
-#         account on the Mac.
-#
-#   Version - v1.1
-#
-#       - Added ability to update the username assigned in Jamf computer
-#         inventory record.
-#           - calls a policy tied to a script that will determine if device was
-#             enrolled via UIE or Automated Enrollment.
-#           - This functionality can be toggled on with the variable
-#             UPDATE_USERNAME_INVENTORY_RECORD below.
-#
-#   Version - v1.2
-#
-#       - Added the ability to enable cheching for Jamf Connect Login with the
-#         JAMF_CONNECT_ENABLED varilble. This variable is assigned to the Jamf
-#         script parameter option number 11. Set the option to true else it
-#         will remain false and assume that we are not using Jamf Connect.
-#
-#   Version - v1.2.1
-#
-#       - Refactoring to make the script a little more portable.
-#       - Added additional functionality to the is_jamf_enrollment_complete
-#         function to check for the jamf.log then look in the log to see if
-#         the enrollmentComplete string is present.
-#
-#   Version - v1.3.0
-#
-#       - Added ability to bind the Mac to an AD domain if the BIND TO ACTIVE
-#         DIRECOTRY section below for more details.
+#		- See the CHANGELOG file at https://github.com/icwfrepo/DEPNotifyers
 #
 ###############################################################################
 
@@ -143,7 +63,18 @@ TESTING_MODE=true # Can be set to true or false
 # prior to enrolling.
 POLICY_ARRAY=(
     # "Installing Google Chrome Browser,google-chrome"
-
+	"Installing Jabber Client,cisco-jabber-client"
+    "Installing Enterprise Connect,enterprise-connect"
+    "Installing Global Protect VPN,global-protect"
+    "Installing WebEx Client,webex-client"
+    "Installing Inventory Collection Agent,snow-agent"
+    "Installing Security Agents,tanium-agent"
+    "Installing Security Agents,traps-agent"
+    "Enabling FileVault,start-filevault2"
+    "Finalizing Your Mac,desktop-wallpaper"
+    "Finalizing Your Mac,manual-screensaver-settings"
+    "Finalizing Your Mac,set-time-server"
+    "Cleaning up,create-local-admin-account"
 )
 
 
@@ -171,7 +102,7 @@ JAMF_CONNECT_ENABLED=false
 # user and the username assigned in Jamf to see if they match.  If desired,
 # the script will update the Jamf Pro inventory record with the current local
 # username. Otherwise, this information is logged for later review.
-UPDATE_USERNAME_INVENTORY_RECORD=false
+UPDATE_USERNAME_INVENTORY_RECORD=true
 
 
 ################################################################################
@@ -182,6 +113,13 @@ UPDATE_USERNAME_INVENTORY_RECORD=false
 # and an "Execution Frequency" set to "Ongoing". Once those items are in place
 # set the DIRECTORY_BINDING_ENABLED varilable below to true.
 DIRECTORY_BINDING_ENABLED=false
+
+
+################################################################################
+# REBOOT ONCE ENROLLMENT IS FINISHED
+################################################################################
+# Calls a policy in Jamf to reboot the machine to complete the enrollment.
+ENROLLMENT_COMPLETE_REBOOT=false
 
 
 ################################################################################
@@ -606,7 +544,7 @@ reg_popup_label_4_logic (){
 logging () {
     # Logging function
 
-    LOG_FILE="enrollment-$(date +"%Y-%m-%d").log"
+    LOG_FILE="$SCRIPT_NAME-$(date +"%Y-%m-%d").log"
     LOG_PATH="/Library/Logs/$LOG_FILE"
     DATE=$(date +"[%b %d, %Y %Z %T INFO]: ")
     printf "$DATE $1\n" >> $LOG_PATH
@@ -886,6 +824,7 @@ is_dep_notify_enrollment_daemon_loaded() {
 
 launch_dep_notify_app (){
     # Opening the DEPNotiy app after initial configuration
+    logging "Enrollment Script: Opening DEPNotify app ..."
     if [ "$FULLSCREEN" = true ]; then
         sudo -u "$CURRENT_USER" \
             open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG" -fullScreen
@@ -899,7 +838,7 @@ launch_dep_notify_app (){
 caffeinate_this() {
     # Using Caffeinate binary to keep the computer awake if enabled
     if [ "$NO_SLEEP" = true ]; then
-        printf "$DATE: Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
+        logging "Enrollment Script: Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
         caffeinate -disu -w "$DEP_NOTIFY_PROCESS"&
     fi
 }
@@ -1454,14 +1393,124 @@ checkin_to_jamf() {
 
 
 dep_notify_cleanup() {
-    # Call DEPNotify cleanup policy
+    #   Removes the files and directories left behind by DEPNotify once
+    #   the device setup is complete. Then, removes the DEPNotify application its
+    #   self.
     #
-    # Calls a policy containing a script to remove depnotify components that
-    # are left behind by the enrollment proces.
-    # This script can be found in the Jamf-DEPNotify repository.
+    #   NOTE: The package used to install DEPNotify will not need to be
+    #         manually removed because the Packages.app will build a tmp
+    #         directory to install the pacakge from and will unmount it once
+    #         the insall is complete. :)
+    #
+    # Default DEPNotify file locations
+    DEPNOTIFY_APP="/Applications/Utilities/DEPNotify.app"
+    DEPNOTIFY_NEW_PLIST="/Users/username/Library/Preferences/menu.nomad.DEPNotify.plist"
+    DEPNOTIFY_TMP="/var/tmp"
+    DEPNOTIFY_LOG="$DEPNOTIFY_TMP/depnotify.log"
+    DEPNOTIFY_DEBUG="$DEPNOTIFY_TMP/depnotifyDebug.log"
+    DEPNOTIFY_DONE="$DEPNOTIFY_TMP/com.depnotify.provisioning.done"
+    DEPNOTIFY_LOGOUT="$DEPNOTIFY_TMP/com.depnotify.provisioning.logout"
+    DEPNOTIFY_RESTART="$DEPNOTIFY_TMP/com.depnotify.provisioning.restart"
+    DEPNOTIFY_AGR_DONE="$DEPNOTIFY_TMP/com.depnotify.agreement.done"
+    DEPNOTIFY_REG_DONE="$DEPNOTIFY_TMP/com.depnotify.registration.done"
+    DEPNOTIFY_EULA_TXT_FILE="/Users/Shared/eula.txt"
 
-    logging "Enrollment Script: jamf: Calling policy: depnotify-cleanup"
-    "$JAMF_BINARY" policy -event depnotify-cleanup
+    # Re-pacakged DEPNotify post-install script file locations
+    DEPNOTIFY_SCRIPTS_DIR="/tmp"
+    DEPNOTIFY_DAEMON="/Library/LaunchDaemons/com.captam3rica.dep-notify-start-enrollment.plist"
+    DEPNOTIFY_ENROLLMENT_STARTER="$DEPNOTIFY_SCRIPTS_DIR/dep-notify-start-enrollment-installer.sh"
+    DEPNOTIFY_INST_ERR="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.err"
+    DEPNOTIFY_INST_OUT="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.out"
+
+    wait_for_depnotify_done (){
+    # Wait for the user to press the Get Started button.
+    until [ -f "$DEPNOTIFY_DONE" ]; do
+        logging "DEPNotify Cleanup: Waiting for $DEPNOTIFY_DONE"
+        logging "DEPNotify Cleanup: The user has not clicked Get Started ..."
+        logging "DEPNotify Cleanup: Waiting 1 second ..."
+        /bin/sleep 1
+    done
+    }
+
+
+    wait_for_depnotify_logout() {
+        # Wait for the user to press the Logout button.
+        until [ -f "$DEPNOTIFY_LOGOUT" ]; do
+            logging "DEPNotify Cleanup: Waiting for $DEPNOTIFY_LOGOUT"
+            logging "DEPNotify Cleanup: The user has not clicked Logout ..."
+            logging "DEPNotify Cleanup: Waiting 1 second ..."
+            /bin/sleep 1
+        done
+    }
+
+
+    remove_depnotify_daemon (){
+        # Unload and remove the LaunchDaemon
+        if [ -e "$DEPNOTIFY_DAEMON" ]; then
+            # The LaunchDaemon file exists
+            logging "DEPNotify Cleanup: Removing DEPNotify LaunchDaemon"
+            /bin/rm -R "$DEPNOTIFY_DAEMON"
+
+        else
+            logging "DEPNotify Cleanup: Daemon not installed."
+        fi
+    }
+
+
+    remove_depnotify_collateral (){
+        # Remove DEPNotify files
+        # Loop through and remove all files accociated with DEPNotify.
+        for thing in \
+            ${DEPNOTIFY_APP} \
+            ${DEPNOTIFY_NEW_PLIST} \
+            ${DEPNOTIFY_LOG} \
+            ${DEPNOTIFY_DEBUG} \
+            ${DEPNOTIFY_RESTART} \
+            ${DEPNOTIFY_AGR_DONE} \
+            ${DEPNOTIFY_REG_DONE} \
+            ${DEPNOTIFY_EULA_TXT_FILE} \
+            ${DEPNOTIFY_ENROLLMENT_STARTER} \
+            ${DEPNOTIFY_INST_ERR} \
+            ${DEPNOTIFY_INST_OUT} \
+            ${DEPNOTIFY_DONE} \
+            ${DEPNOTIFY_LOGOUT}; do
+
+            if [ -e "$thing" ] || [ -d "$thing" ]; then
+                # If a DEPNotify log file or dir exists remove it.
+
+                logging "DEPNotify Cleanup: Attempting to remove $thing ..."
+                /bin/rm -R "$thing"
+                RETURN="$?"
+
+                if [ "$RETURN" -ne 0 ]; then
+                    # Log that an error occured while removing a file.
+                    logging "DEPNotify Cleanup: ERROR: Unable to remove $thing"
+                    return "$RETURN"
+                fi
+
+            else
+                # File or directory not found.
+                logging "DEPNotify Cleanup: $thing not found ..."
+            fi
+        done
+    }
+
+    logging "-- Start DEPNotify cleanup --"
+    logging "DEPNotify Cleanup: Script version $VERSION"
+
+    # Check to see which DEPNotify continue option was selected.
+    if [ "$COMPLETE_METHOD_DROPDOWN_ALERT" = true ]; then
+        # Continue with logout
+        remove_depnotify_daemon
+        remove_depnotify_collateral
+        logging "-- End DEPNotify Cleanup --"
+    else
+        # Regular continue
+        wait_for_depnotify_done
+        remove_depnotify_daemon
+        remove_depnotify_collateral
+        logging "-- End DEPNotify Cleanup --"
+    fi
 }
 
 
@@ -1524,6 +1573,8 @@ reboot_me() {
 ###############################################################################
 
 
+SCRIPT_NAME=$(/usr/bin/basename "$0" | /usr/bin/awk -F "." '{print $1}')
+
 # Binaries
 DEFAULTS="/usr/bin/defaults"
 FDESETUP_BINARY="/usr/bin/fdesetup"
@@ -1584,7 +1635,7 @@ main() {
     logging ""
     logging "--- BEGIN DEVICE ENROLLMENT LOG ---"
     logging ""
-    logging "Jamf DEPNotify Enrollment Script Version ${VERSION}"
+    logging "$SCRIPT_NAME Version ${VERSION}"
     logging ""
 
     # Adding Check and Warning if Testing Mode is off and BOM files exist
@@ -1611,6 +1662,7 @@ main() {
 
     validate_true_false_flags
     get_setup_assistant_process
+	is_dep_notify_enrollment_daemon_loaded
 
 
     if [ "$JAMF_CONNECT_ENABLED" = true ]; then
@@ -1622,7 +1674,7 @@ main() {
         logging "Enrollment Script: Not using Jamf Connect ..."
     fi
 
-    is_jamf_enrollment_complete
+    # is_jamf_enrollment_complete
     check_for_dep_notify_app
     get_finder_process
     get_current_user_uid
@@ -1633,7 +1685,6 @@ main() {
     fi
 
     general_plist_config
-    is_dep_notify_enrollment_daemon_loaded
     launch_dep_notify_app
     get_dep_notify_process
 
@@ -1684,9 +1735,13 @@ main() {
     # Nice completion text
     echo "Status: $INSTALL_COMPLETE_TEXT" >> "$DEP_NOTIFY_LOG"
 
-
     dep_notify_cleanup
 
+    if [ "$ENROLLMENT_COMPLETE_REBOOT" = true ]; then
+        # If the ENROLLMENT_COMPLETE_REBOOT setting is set to true at the top of
+        # this script we need to reboot.
+        reboot_me
+    fi
 
     logging ""
     logging "--- END DEVICE ENROLLMENT LOG ---"
