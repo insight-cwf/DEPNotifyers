@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # GitHub: @captam3rica
-VERSION=2.0.0
+VERSION=2.2.1
 
-###############################################################################
+#######################################################################################
 #
 # This Insight Software is provided by Insight on an "AS IS" basis.
 #
@@ -21,7 +21,7 @@ VERSION=2.0.0
 # STRICT LIABILITY OR OTHERWISE, EVEN IF INSIGHT HAS BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-###############################################################################
+#######################################################################################
 #
 #   DESCRIPTION
 #
@@ -31,28 +31,36 @@ VERSION=2.0.0
 #       modify things in or below the CORE LOGIC area unless major testing and
 #       validation is performed.
 #
-###############################################################################
+#######################################################################################
 #
 #   CHANGELOG
 #
 #	- See the CHANGELOG file at https://github.com/icwfrepo/DEPNotifyers
 #
-###############################################################################
+#######################################################################################
 
-#####################################################################captam3rica
+############################################################################captam3rica
 # TESTING MODE
-###############################################################################
+#######################################################################################
 # The TESTING_MODE flag will enable the following things to change:
 #   - Auto removal of BOM files to reduce errors
 #   - Sleep commands instead of policies or other changes being called
 #   - Quit Key set to command + control + x
-
 TESTING_MODE=true # Can be set to true or false
 
 
-###############################################################################
+########################################################################################
+# Trigger to be used to call the policy
+########################################################################################
+# Policies can be called be either a custom trigger or by policy id.
+# Select either event, to call the policy by the custom trigger,
+# or id to call the policy by id.
+TRIGGER="event"
+
+
+#######################################################################################
 # POLICY ARRAY VARIABLE TO MODIFY
-###############################################################################
+#######################################################################################
 # The policy array must be formatted "Progress Bar text,customTrigger". These
 # will be run in order as they appear below.
 #
@@ -63,35 +71,55 @@ TESTING_MODE=true # Can be set to true or false
 # prior to enrolling.
 POLICY_ARRAY=(
     # "Installing Google Chrome Browser,google-chrome"
-	"Installing Jabber Client,cisco-jabber-client"
-    "Installing Enterprise Connect,enterprise-connect"
-    "Installing Global Protect VPN,global-protect"
-    "Installing WebEx Client,webex-client"
-    "Installing Inventory Collection Agent,snow-agent"
-    "Installing Security Agents,tanium-agent"
-    "Installing Security Agents,traps-agent"
-    "Enabling FileVault,start-filevault2"
-    "Finalizing Your Mac,desktop-wallpaper"
-    "Finalizing Your Mac,manual-screensaver-settings"
-    "Finalizing Your Mac,set-time-server"
-    "Cleaning up,create-local-admin-account"
 )
 
 
-################################################################################
+#######################################################################################
+# (OPTIONAL) APP ICON ARRAY VARIABLE TO MODIFY
+#######################################################################################
+# The policy array must be formatted "App Name,/path/to/local/image.png". The App name
+# should be contained in both the App Icon Array and the Policy array so that the
+# script can determine which icon needs to be displayed.
+#
+# These icons should coinside with the order of the policy array above so that the
+# right App icon is displayed as the App is being installed. This array is not required.
+#
+# These icon images will need to be deployed in the jamf-depnotify-installer package.
+APP_ICON_ARRAY=(
+    # "/tmp/depnotify/icons/citrix_workspace_icon.png"
+)
+
+
+#######################################################################################
 # JAMF CONNECT
-################################################################################
-# If Jamf Connect is being used set the 11th script parameter to true
+#######################################################################################
+# If Jamf Connect is being used set the 11th script parameter in the Jamf script policy
+# to true
 JAMF_CONNECT_ENABLED=false
 
 
-################################################################################
+#######################################################################################
+# SAP PRIVILEGES APP
+#######################################################################################
+# Privileges.app for macOS is designed to allow users to work as a standard user for
+# day-to-day use, by providing a quick and easy way to get administrator rights when
+# needed. When you do need admin rights, you can get them by clicking on the Privileges
+# icon in your Dock.
+#
+# This functionality requires that an SAP Privileges app istallaton policy be added to
+# Jamf Cloud and called via jamp policy.
+#
+# An example package can be found in the following GitHub Repo:
+SAP_PRIVILEGES_APP_ENABLED=false
+
+
+#######################################################################################
 # UPDATE USERNAME INVENTORY RECORD
-################################################################################
+#######################################################################################
 # This functionality requires that the update-username-inventory-record.sh
 # script be uploaded to Jamf and called as a policy.
 #
-# A copy of the script can be found here: https://github.com/captam3rica/Scripts/blob/master/Jamf/update-username-inventory-record.sh
+# A copy of the script can be found here: https://github.com/captam3rica/Scripts/blob/master/jamf/update-username-inventory-record.sh
 #
 # If the user is created during Automated enrollment the Jamf Pro inventory
 # record is updated to include this username.
@@ -102,12 +130,12 @@ JAMF_CONNECT_ENABLED=false
 # user and the username assigned in Jamf to see if they match.  If desired,
 # the script will update the Jamf Pro inventory record with the current local
 # username. Otherwise, this information is logged for later review.
-UPDATE_USERNAME_INVENTORY_RECORD=true
+UPDATE_USERNAME_INVENTORY_RECORD_ENABLED=false
 
 
-################################################################################
+#######################################################################################
 # BIND TO ACTIVE DIRECTORY
-################################################################################
+#######################################################################################
 # This functionality requires that a Directory Binding policy be created in
 # Jamf. This policy must have a customer trigger set to "directory-binding",
 # and an "Execution Frequency" set to "Ongoing". Once those items are in place
@@ -115,16 +143,16 @@ UPDATE_USERNAME_INVENTORY_RECORD=true
 DIRECTORY_BINDING_ENABLED=false
 
 
-################################################################################
+#######################################################################################
 # REBOOT ONCE ENROLLMENT IS FINISHED
-################################################################################
-# Calls a policy in Jamf to reboot the machine to complete the enrollment.
-ENROLLMENT_COMPLETE_REBOOT=false
+#######################################################################################
+# Leverages the DEPNotify Restart command to reboot the Mac after setup completes.
+RESTART_ENABLED=false
 
 
-################################################################################
+#######################################################################################
 # GENERAL APPEARANCE
-################################################################################
+#######################################################################################
 
 # Flag the app to open fullscreen or as a window
 FULLSCREEN=true # Set variable to true or false
@@ -136,16 +164,20 @@ FULLSCREEN=true # Set variable to true or false
 
 BANNER_IMAGE_PATH="/Applications/Self Service.app/Contents/Resources/AppIcon.icns"
 
+# Update the variable below replacing "Organization" with the actual name of your
+# organization. Example "ACME Corp Inc."
+YOUR_ORG_NAME_HERE="Organization"
+
 # Main heading that will be displayed under the image If this variable is left
 # blank, the generic banner will appear
 
-BANNER_TITLE="Welcome to Your_Org_Name_Here"
+BANNER_TITLE="Welcome to $YOUR_ORG_NAME_HERE"
 
 # Paragraph text that will display under the main heading. For a new line,
 # use \n If this variable is left blank, the generic message will appear.
 # Leave single quotes below as double quotes will break the new lines.
 
-MAIN_TEXT='Thanks for choosing a Mac at Your_Org_Name_Here! We want you to have a few applications and settings configured before you get started with your new Mac. This process should take 10 to 20 minutes to complete. \n \n If you need additional software or help, please visit the Self Service app in your Applications folder or on your Dock.'
+MAIN_TEXT='Thanks for choosing a Mac at '$YOUR_ORG_NAME_HERE'! We want you to have a few applications and settings configured before you get started with your new Mac. This process should take 10 to 20 minutes to complete. \n \n If you need additional software or help, please visit the Self Service app in your Applications folder or on your Dock.'
 
 # Initial Start Status text that shows as things are firing up
 INITAL_START_STATUS="Initial Configuration Starting..."
@@ -180,9 +212,9 @@ COMPLETE_MAIN_TEXT='Your Mac is now finished with initial setup and configuratio
 COMPLETE_BUTTON_TEXT="Get Started!"
 
 
-################################################################################
+#######################################################################################
 # PLIST CONFIGURATION
-################################################################################
+#######################################################################################
 # The menu.depnotify.plist contains more and more things that configure the
 # DEPNotify app. You may want to save the file for purposes like verifying EULA
 # acceptance or validating other options.
@@ -192,10 +224,9 @@ COMPLETE_BUTTON_TEXT="Get Started!"
 # allow for configuration of where the plist is stored
 info_plist_wrapper (){
 
-    # Call the get_current_user function
-    get_current_user
+    cu="$1"
 
-    DEP_NOTIFY_USER_INPUT_PLIST="/Users/$CURRENT_USER/Library/Preferences/menu.nomad.DEPNotifyUserInput.plist"
+    DEP_NOTIFY_USER_INPUT_PLIST="/Users/$cu/Library/Preferences/menu.nomad.DEPNotifyUserInput.plist"
 }
 
 # Status Text Alignment
@@ -207,12 +238,12 @@ STATUS_TEXT_ALIGN="center"
 # The help button was changed to a popup. Button will appear if title is
 # populated.
 HELP_BUBBLE_TITLE="Need Help?"
-HELP_BUBBLE_BODY='This tool at Your_Org_Name_Here is designed to help \nwith new employee onboarding. \nIf you have issues, please give us a \ncall at 123-456-7890'
+HELP_BUBBLE_BODY='This tool at '$YOUR_ORG_NAME_HERE' is designed to help \nwith new employee onboarding. \nIf you have issues, please give us a \ncall at 123-456-7890'
 
 
-################################################################################
+#######################################################################################
 # Error Screen Text
-################################################################################
+#######################################################################################
 # If testing mode is false and configuration files are present, this text will
 # appear to the end user and asking them to contact IT. Limited window options
 # here as the assumption is that they need to call IT. No continue or exit
@@ -231,9 +262,9 @@ ERROR_MAIN_TEXT='We are sorry that you are experiencing this inconvenience with 
 ERROR_STATUS="Setup Failed"
 
 
-################################################################################
+#######################################################################################
 # Caffeinate / No Sleep Configuration
-################################################################################
+#######################################################################################
 # Flag script to keep the computer from sleeping. BE VERY CAREFUL WITH THIS
 # FLAG! This flag could expose your data to risk by leaving an unlocked
 # computer wide open. Only recommended if you are using fullscreen mode and
@@ -244,9 +275,9 @@ ERROR_STATUS="Setup Failed"
 NO_SLEEP=false
 
 
-################################################################################
+#######################################################################################
 # Customized Self Service Branding
-################################################################################
+#######################################################################################
 # Flag for using the custom branding icon from Self Service and Jamf Pro
 # This will override the banner image specified above. If you have changed the
 # name of Self Service, make sure to modify the Self Service name below.
@@ -261,9 +292,9 @@ SELF_SERVICE_CUSTOM_BRANDING=false # Set variable to true or false
 SELF_SERVICE_APP_NAME="Self Service.app"
 
 
-################################################################################
+#######################################################################################
 # EULA Variables to Modify
-################################################################################
+#######################################################################################
 # EULA configuration
 EULA_ENABLED=false # Set variable to true or false
 
@@ -285,9 +316,9 @@ EULA_SUBTITLE='Please agree to the following terms and conditions to start confi
 EULA_FILE_PATH="/Users/Shared/eula.txt"
 
 
-################################################################################
+#######################################################################################
 # Registration Variables to Modify
-################################################################################
+#######################################################################################
 
 # Registration window configuration
 REGISTRATION_ENABLED=false # Set variable to true or false
@@ -314,7 +345,7 @@ REGISTRATION_MIDDLE_WORD="to"
 # the pick display variable empty will hide the dropdown / pick list.
 
 # First Text Field
-################################################################################
+#######################################################################################
 # Text Field Label
 REG_TEXT_LABEL_1="Computer Name"
 
@@ -357,7 +388,7 @@ reg_text_label_1_logic (){
 }
 
 # Second Text Field
-################################################################################
+#######################################################################################
 
 # Text Field Label
 REG_TEXT_LABEL_2="Asset Tag"
@@ -400,7 +431,7 @@ reg_text_label_2_logic (){
 }
 
 # Popup 1
-################################################################################
+#######################################################################################
 
 # Label for the popup
 REG_POPUP_LABEL_1="Building"
@@ -434,7 +465,7 @@ reg_popup_label_1_logic (){
 }
 
 # Popup 2
-################################################################################
+#######################################################################################
 # Label for the popup
 REG_POPUP_LABEL_2="Department"
 
@@ -468,7 +499,7 @@ reg_popup_label_2_logic (){
 }
 
 # Popup 3 - Code is here but currently unused
-################################################################################
+#######################################################################################
 
 # Label for the popup
 REG_POPUP_LABEL_3=""
@@ -503,7 +534,7 @@ reg_popup_label_3_logic (){
 }
 
 # Popup 4 - Code is here but currently unused
-################################################################################
+#######################################################################################
 # Label for the popup
 REG_POPUP_LABEL_4=""
 
@@ -604,8 +635,8 @@ validate_true_false_flags (){
     if [ "$JAMF_CONNECT_ENABLED" != true ] && \
         [ "$JAMF_CONNECT_ENABLED" != false ]; then
 
-        /bin/echo "$DATE: Registration configuration not set properly. Currently set to $JAMF_CONNECT_ENABLED. Please update to true or false." >> "$DEP_NOTIFY_DEBUG"
-        logging "DEBUG: Registration configuration not set properly. Currently set to $JAMF_CONNECT_ENABLED. Please update to true or false."
+        /bin/echo "$DATE: Jamf Connect configuration not set properly. Currently set to $JAMF_CONNECT_ENABLED. Please update to true or false." >> "$DEP_NOTIFY_DEBUG"
+        logging "DEBUG: Jamf Connect configuration not set properly. Currently set to $JAMF_CONNECT_ENABLED. Please update to true or false."
         exit 1
     fi
 }
@@ -640,40 +671,6 @@ get_setup_assistant_process () {
 
     logging "$PROCESS_NAME finished ... OK"
 
-}
-
-
-get_finder_process (){
-    # Check to see if the Finder is running yet. If it is, continue. Nice for
-    # instances where the user is not setting up a username during the Setup
-    # Assistant process.
-
-    logging "Checking to see if the Finder process is running ..."
-    echo "$DATE Checking to see if the Finder process is running ..."
-    FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
-
-    RESPONSE=$?
-
-    logging "Finder PID: $FINDER_PROCESS"
-    echo "Finder PID: $FINDER_PROCESS"
-
-    while [[ $RESPONSE -ne 0 ]]; do
-
-        logging "Finder PID not found. Assuming device is sitting \
-            at the login window ..."
-        echo "$DATE: Finder PID not found. Assuming device is sitting \
-            at the login window ..."
-
-        /bin/sleep 1
-
-        FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
-        RESPONSE=$?
-
-        if [[ $FINDER_PROCESS != "" ]]; then
-            logging "Finder PID: $FINDER_PROCESS"
-            echo "$DATE: Finder PID: $FINDER_PROCESS"
-        fi
-    done
 }
 
 
@@ -718,6 +715,82 @@ check_for_jamf_connect_login() {
 
     done
     logging "Found Jamf Connect Login ..."
+}
+
+
+get_finder_process (){
+    # Check to see if the Finder is running yet. If it is, continue. Nice for
+    # instances where the user is not setting up a username during the Setup
+    # Assistant process.
+
+    logging "Checking to see if the Finder process is running ..."
+    echo "$DATE Checking to see if the Finder process is running ..."
+    FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
+
+    RESPONSE=$?
+
+    logging "Finder PID: $FINDER_PROCESS"
+    echo "Finder PID: $FINDER_PROCESS"
+
+    while [[ $RESPONSE -ne 0 ]]; do
+
+        logging "Finder PID not found. Assuming device is sitting \
+            at the login window ..."
+        echo "$DATE: Finder PID not found. Assuming device is sitting \
+            at the login window ..."
+
+        /bin/sleep 1
+
+        FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
+        RESPONSE=$?
+
+        if [[ $FINDER_PROCESS != "" ]]; then
+            logging "Finder PID: $FINDER_PROCESS"
+            echo "$DATE: Finder PID: $FINDER_PROCESS"
+        fi
+    done
+}
+
+
+get_current_user() {
+    # Return the current user
+    printf '%s' "show State:/Users/ConsoleUser" | \
+        /usr/sbin/scutil | \
+        /usr/bin/awk '/Name :/ && ! /loginwindow/ {print $3}'
+}
+
+
+get_current_user_uid() {
+    # Check to see if the current console user uid is greater than 501
+    # Loop until either the 501 or 502 user is found.
+
+    # Get the current console user again
+    cu="$1"
+
+    logging "Getting current user UID ..."
+
+    cu_uid=$(/usr/bin/dscl . -list /Users UniqueID | /usr/bin/grep "$cu" | \
+        /usr/bin/awk '{print $2}' | \
+        /usr/bin/sed -e 's/^[ \t]*//')
+
+    while [[ $cu_uid -lt 501 ]]; do
+
+        logging "Current user is not logged in ... WAITING"
+        /bin/sleep 1
+
+        # Get the current console user again
+        cu=get_current_user
+
+        cu_uid=$(/usr/bin/dscl . -list /Users UniqueID | /usr/bin/grep "$cu" | \
+            /usr/bin/awk '{print $2}' | \
+            /usr/bin/sed -e 's/^[ \t]*//')
+
+        if [[ $cu_uid -lt 501 ]]; then
+            logging "Current user: $cu with UID ..."
+        fi
+    done
+
+    printf "%s\n" "$cu_uid"
 }
 
 
@@ -770,15 +843,15 @@ is_jamf_enrollment_complete() {
     while [[ ! -f /usr/local/bin/jamf ]]; do
         # Sleep for 2 seconds
         printf "$DATE: Waiting for the jamf binary to install ...\n"
-        logging "Enrollment Script: Waiting for the jamf binary to install ..."
+        logging "Waiting for the jamf binary to install ..."
         /bin/sleep 2
     done
 
-    logging "Enrollment Script: The Jamf binary is installed."
+    logging "The Jamf binary is installed."
 
     until [ -f "/var/log/jamf.log" ]; do
         # If the jamf.log is found wait until we find enrollment complete.
-        logging "Enrollment Script: Waiting for jamf log to appear ..."
+        logging "Waiting for jamf log to appear ..."
         /bin/sleep 1
     done
 
@@ -791,27 +864,36 @@ is_jamf_enrollment_complete() {
 
     until [ "$RETURN" -eq 0 ]; do
         # Wait for enrollmentComplete to appear in the Jamf log.
-        logging "Enrollment Script: Looking for the enrollmentComplete string in the Jamf log."
+        logging "Looking for the enrollmentComplete string in the Jamf log."
         /bin/sleep 1
         # look for the enrollmentComplete string in the Jamf log.
         /usr/bin/grep -q "enrollmentComplete" "/var/log/jamf.log"
         RETURN=$?
     done
 
-    logging "Enrollment Script: Jamf enrollment complete."
+    logging "Jamf enrollment complete."
 
 }
 
 
 launch_dep_notify_app (){
     # Opening the DEPNotiy app after initial configuration
-    logging "Enrollment Script: Opening DEPNotify app ..."
+    cu="$1"
+
+    logging "Opening DEPNotify app ..."
+
     if [ "$FULLSCREEN" = true ]; then
-        sudo -u "$CURRENT_USER" \
+        sudo -u "$cu" \
+        sudo -u "$cu" \
+        sudo -u "$cu" \
             open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG" -fullScreen
+
     elif [ "$FULLSCREEN" = false ]; then
-        sudo -u "$CURRENT_USER" \
+        sudo -u "$cu" \
+        sudo -u "$cu" \
+        sudo -u "$cu" \
             open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+
     fi
 }
 
@@ -819,7 +901,7 @@ launch_dep_notify_app (){
 caffeinate_this() {
     # Using Caffeinate binary to keep the computer awake if enabled
     if [ "$NO_SLEEP" = true ]; then
-        logging "Enrollment Script: Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
+        logging "Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
         caffeinate -disu -w "$DEP_NOTIFY_PROCESS"&
     fi
 }
@@ -843,61 +925,15 @@ get_dep_notify_process (){
 }
 
 
-get_current_user() {
-    # Return the current user
-    CURRENT_USER=$(printf '%s' "show State:/Users/ConsoleUser" | \
-        /usr/sbin/scutil | \
-        /usr/bin/awk '/Name :/ && ! /loginwindow/ {print $3}')
-}
-
-
-get_current_user_uid() {
-    # Check to see if the current console user uid is greater than 501
-    # Loop until either the 501 or 502 user is found.
-
-    # Get the current console user again
-    get_current_user
-
-    logging "Enrollment Script: Getting current user UID ..."
-
-    CURRENT_USER_UID=$(/usr/bin/dscl . -list /Users UniqueID | \
-        /usr/bin/grep "$CURRENT_USER" | \
-        /usr/bin/awk '{print $2}' | \
-        /usr/bin/sed -e 's/^[ \t]*//')
-
-    logging "Current User: $CURRENT_USER"
-    logging "Current User UID: $CURRENT_USER_UID"
-
-    while [[ $CURRENT_USER_UID -lt 501 ]]; do
-
-        logging "Enrollment Script: Current user is not logged in ... WAITING"
-        /bin/sleep 1
-
-        # Get the current console user again
-        get_current_user
-
-        CURRENT_USER_UID=$(/usr/bin/dscl . -list /Users UniqueID | \
-            /usr/bin/grep "$CURRENT_USER" | \
-            /usr/bin/awk '{print $2}' | \
-            /usr/bin/sed -e 's/^[ \t]*//')
-
-        logging "Enrollment Script: Current User: $CURRENT_USER"
-        logging "Enrollment Script: Current User UID: $CURRENT_USER_UID"
-
-        if [[ $CURRENT_USER_UID -lt 501 ]]; then
-            logging "Enrollment Script: Current user: $CURRENT_USER with UID ..."
-        fi
-    done
-}
-
-
 self_service_custom_branding() {
     # If SELF_SERVICE_CUSTOM_BRANDING is set to true. Loading the updated icon
     open -a "/Applications/$SELF_SERVICE_APP_NAME" --hide
 
+    cu="$1"
+
     # Loop waiting on the branding image to properly show in the users
     # library
-    CUSTOM_BRANDING_PNG="/Users/$CURRENT_USER/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
+    CUSTOM_BRANDING_PNG="/Users/$cu/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
 
     until [ -f "$CUSTOM_BRANDING_PNG" ]; do
         echo "$DATE: Waiting for branding image from Jamf Pro." >> "$DEP_NOTIFY_DEBUG"
@@ -935,12 +971,13 @@ self_service_custom_branding() {
 
 general_plist_config() {
     # General Plist Configuration
+    cu="$1"
 
     # Calling function to set the INFO_PLIST_PATH
-    info_plist_wrapper
+    info_plist_wrapper "$cu"
 
     # The plist information below
-    DEP_NOTIFY_CONFIG_PLIST="/Users/$CURRENT_USER/Library/Preferences/menu.nomad.DEPNotify.plist"
+    DEP_NOTIFY_CONFIG_PLIST="/Users/$cu/Library/Preferences/menu.nomad.DEPNotify.plist"
 
     if [ "$TESTING_MODE" = true ] && [ -f "$DEP_NOTIFY_CONFIG_PLIST" ]; then
         # If testing mode is on, this will remove some old configuration files
@@ -974,7 +1011,7 @@ general_plist_config() {
     fi
 
     # Changing Ownership of the plist file
-    chown "$CURRENT_USER":staff "$DEP_NOTIFY_CONFIG_PLIST"
+    chown "$cu":staff "$DEP_NOTIFY_CONFIG_PLIST"
     chmod 600 "$DEP_NOTIFY_CONFIG_PLIST"
 }
 
@@ -1028,6 +1065,7 @@ status_bar_gen() {
 
 eula_configuration() {
     # EULA Configuration
+    cu="$1"
     DEP_NOTIFY_EULA_DONE="/var/tmp/com.depnotify.agreement.done"
 
     # If testing mode is on, this will remove EULA specific configuration
@@ -1044,7 +1082,7 @@ eula_configuration() {
     defaults write "$DEP_NOTIFY_CONFIG_PLIST" pathToEULA "$EULA_FILE_PATH"
 
     # Setting ownership of EULA file
-    chown "$CURRENT_USER:staff" "$EULA_FILE_PATH"
+    chown "$cu:staff" "$EULA_FILE_PATH"
     chmod 444 "$EULA_FILE_PATH"
 }
 
@@ -1244,12 +1282,41 @@ registration_window_display_logic (){
 
 install_policies() {
     # Install policies by looping through the policy array defined above.
-    #
-    # If a policy is installing an application the function will first check to
-    # see if the app is already installed on the system and skip that policy
-    # if the app is found.
 
-    logging "Enrollment Script: Preparing to install Jamf application policies."
+    logging "Preparing to install Jamf application policies."
+
+    for policy in "${POLICY_ARRAY[@]}"; do
+        # Loop through the policy array and install each policy
+
+        if [[ $TESTING_MODE = true ]]; then
+            logging "Test mode enabled ... INFO"
+            sleep 10
+
+        elif [[ $TESTING_MODE = false ]]; then
+            # Install the given policy
+
+            # psuedo local variables
+            policy_status=$(/bin/echo "$policy" | cut -d ',' -f1)
+            policy_name=$(/bin/echo "$policy" | cut -d ',' -f2)
+
+            logging "Calling $policy_name policy."
+            /bin/echo "Status: $policy_status" >> "$DEP_NOTIFY_LOG"
+
+            "$JAMF_BINARY" policy -event "$policy_name" | \
+        		/usr/bin/sed -e "s/^/$DATE/" | \
+        		/usr/bin/tee -a "$LOG_PATH" > /dev/null 2>&1
+        fi
+    done
+}
+
+
+install_policies_with_icon() {
+    # Install policies and display app icons.
+    #
+    # This function installs each policy in the policy array and applies the
+    # corrosponding application icon in the app icon array to the Image in
+    # DEPNotify.
+    logging "Preparing to install Jamf application policies."
 
     for policy in "${POLICY_ARRAY[@]}"; do
         # Loop through the policy array and install each policy
@@ -1258,36 +1325,72 @@ install_policies() {
         policy_status=$(/bin/echo "$policy" | cut -d ',' -f1)
         policy_name=$(/bin/echo "$policy" | cut -d ',' -f2)
 
-        if [[ $TESTING_MODE = true ]]; then
-            logging "Enrollment Script: Test mode enabled ... INFO"
-            sleep 10
+        for icon in "${APP_ICON_ARRAY[@]}"; do
+            # Loop through the app icon array and change the Image
 
-        elif [[ $TESTING_MODE = false ]]; then
-            # Install the given policy
-            logging "Enrollment Script: Jamf: calling $policy_name policy."
-            echo "Status: $policy_status" >> "$DEP_NOTIFY_LOG"
-            "$JAMF_BINARY" policy \
-                -event "$policy_name" | \
-        		/usr/bin/sed -e "s/^/$DATE/" | \
-        		/usr/bin/tee -a "$LOG_PATH" > /dev/null 2>&1
-        fi
+            app_icon_name=$(/bin/echo "$icon" | cut -d ',' -f1)
+    		app_icon_path=$(/bin/echo "$icon" | cut -d ',' -f2)
+
+            if [[ $TESTING_MODE = true ]]; then
+                logging "Test mode enabled ... INFO"
+                sleep 10
+
+            elif [[ $TESTING_MODE = false ]]; then
+                # Install the given policy
+
+                # Check to see if the policy status string contains the app icon name.
+                if printf "%s" "$policy_status" | /usr/bin/grep -q -i "$app_icon_name";
+                then
+
+                    logging "Calling $policy_name policy."
+                    /bin/echo "Status: $policy_status" >> "$DEP_NOTIFY_LOG"
+                    logging "Changing Image to $app_icon_path"
+                    /bin/echo "Command: Image: $app_icon_path" >> "$DEP_NOTIFY_LOG"
+
+                    "$JAMF_BINARY" policy -event "$policy_name" | \
+                		/usr/bin/sed -e "s/^/$DATE/" | \
+                		/usr/bin/tee -a "$LOG_PATH" > /dev/null 2>&1
+
+                    break
+        		fi
+            fi
+        done
     done
 }
+
+
+for policy in "${POLICY_ARRAY[@]}"; do
+
+	policy_status=$(/bin/echo "$policy" | cut -d ',' -f1)
+
+	for icon in "${APP_ICON_ARRAY[@]}"; do
+
+		app_icon_name=$(/bin/echo "$icon" | cut -d ',' -f1)
+		app_icon_path=$(/bin/echo "$icon" | cut -d ',' -f2)
+
+		if printf "%s" "$policy_status" | /usr/bin/grep -q -i "$app_icon_name"; then
+			echo "$app_icon_path"
+
+		fi
+
+	done
+
+done
 
 
 set_computer_name () {
     # Set the computer name
 
     # Store device serial number
-    SERIAL_NUMBER=$(/usr/sbin/system_profiler SPHardwareDataType | \
+    serial_number=$(/usr/sbin/system_profiler SPHardwareDataType | \
             /usr/bin/awk '/Serial\ Number\ \(system\)/ {print $NF}')
 
-    logging "Enrollment Script: Setting computer name to: $SERIAL_NUMBER"
+    logging "Setting computer name to: $serial_number"
 
     # Set device name using scutil
-    /usr/sbin/scutil --set ComputerName "${SERIAL_NUMBER}"
-    /usr/sbin/scutil --set LocalHostName "${SERIAL_NUMBER}"
-    /usr/sbin/scutil --set HostName "${SERIAL_NUMBER}"
+    /usr/sbin/scutil --set ComputerName "$serial_number"
+    /usr/sbin/scutil --set LocalHostName "$serial_number"
+    /usr/sbin/scutil --set HostName "$serial_number"
 
     # Set device name using jamf binary to make sure of the correct name
     "$JAMF_BINARY" setComputerName -useSerialNumber
@@ -1298,21 +1401,21 @@ set_computer_name () {
 update_username_in_jamf_cloud() {
     # Ensure that the username field is populated under the device inventory
     # record.
-    logging "Enrollment Script: Calling Jamf policy to update username inventory record."
+    logging "Calling Jamf policy to update username inventory record."
     "$JAMF_BINARY" policy -event update-username
 }
 
 
 directory_binding (){
     # Calls Jamf policy to bind the Mac to AD.
-    logging "Enrollment Script: Calling Jamf policy to bind Mac to AD."
+    logging "Calling Jamf policy to bind Mac to AD."
     "$JAMF_BINARY" policy -event directory-binding
 }
 
 
 enable_location_services() {
     # Enable location services
-    logging "Enrollment Script: locationd: Enableing Location services ..."
+    logging "locationd: Enableing Location services ..."
     sudo -u _locationd /usr/bin/defaults \
         -currentHost write com.apple.locationd LocationServicesEnabled -int 1
 }
@@ -1320,12 +1423,72 @@ enable_location_services() {
 
 lock_login_keychain() {
     # Lock Keychain while Sleep
-    logging "Enrollment Script: Keychain: Lock keychain while device is sleeping."
+    logging "Keychain: Lock keychain while device is sleeping."
     sudo security set-keychain-settings -l
 }
 
 
-filevault_configuration() {
+checkin_to_jamf() {
+    # Force the Mac to checkin with Jamf and submit its enventory.
+    logging "Submitting device inventory to Jamf ..."
+    /bin/echo "Status: Submitting device inventory to Jamf" >> "$DEP_NOTIFY_LOG"
+    "$JAMF_BINARY" recon
+}
+
+
+create_stub_file() {
+    # Create the a stub file
+    #
+    # Set the name of the stub file to your liking or pass the name of a stub
+    # to this function as the $1 builtin.
+    #
+    # While the stub file does not exist, create it.
+    # Force device checkin to jamf to initiate extension attribute
+    # If the stub file exists, move the device to the "Enrollment Complete"
+    # SmartGroup so that the wifi profile payload will come down.
+    # Otherwise, continue checking for the stub file
+
+    if [ "$1" != "" ]; then
+        STUB_FILE_NAME="$1"
+        logging "Using function arg"
+    else
+        STUB_FILE_NAME=".enrollment_complete.txt"
+    fi
+
+    stub_file_path="/Users/Shared/$STUB_FILE_NAME"
+
+    while [ ! -f "$stub_file_path" ]; do
+        # Create STUB file
+        logging "Laying down $STUB_FILE_NAME stub file"
+        /usr/bin/touch "$stub_file_path"
+
+        # Set the stub location
+        stub_file_path="/Users/Shared/$STUB_FILE_NAME"
+
+        if [ -f "$stub_file_path" ]; then
+            logging "$STUB_FILE_NAME Stub file found!!!"
+
+        else
+            logging "Still looking for $STUB_FILE_NAME stub file ..."
+            /bin/sleep 1
+            /usr/bin/touch "$stub_file_path"
+
+        fi
+
+    done
+
+}
+
+
+install_sap_privileges_app() {
+	# Call jamf policy to install SAP Privileges App
+	"$JAMF_BINARY" policy -event sap-privileges-installer | \
+        /usr/bin/sed -e "s/^/$DATE/" | \
+        /usr/bin/tee -a "$LOG_PATH" > /dev/null 2>&1
+}
+
+
+filevault_configuration_status() {
     # Check to see if FileVault Deferred enablement is active
 
     /bin/echo "Status: Checking FileVault" >> "$DEP_NOTIFY_LOG"
@@ -1365,11 +1528,20 @@ filevault_configuration() {
 }
 
 
-checkin_to_jamf() {
-    # Force the Mac to checkin with Jamf and submit its enventory.
-    logging "Enrollment Script: Submitting device inventory to Jamf ..."
-    /bin/echo "Status: Submitting device inventory to Jamf" >> "$DEP_NOTIFY_LOG"
-    "$JAMF_BINARY" recon
+is_filevault_enabled() {
+	# Return the status of FileVault
+	# Returns active or disabled.
+	fv_deferred_status=$($FDESETUP_BINARY status | \
+        /usr/bin/grep "Deferred" | \
+        /usr/bin/cut -d ' ' -f6)
+
+	if [ "$fv_deferred_status" = "active" ]; then
+		# Return active status.
+		fv_deferred_status="active"
+	else
+		fv_deferred_status="disabled"
+	fi
+ 	printf "%s\n" "$fv_deferred_status"
 }
 
 
@@ -1379,9 +1551,8 @@ dep_notify_cleanup() {
     #   self.
     #
     #   NOTE: The package used to install DEPNotify will not need to be
-    #         manually removed because the Packages.app will build a tmp
-    #         directory to install the pacakge from and will unmount it once
-    #         the insall is complete. :)
+    #         manually removed because Packages.app will build a tmp directory to
+    #         install the pacakge from and will unmount it once the insall is complete.
     #
     # Default DEPNotify file locations
     DEPNOTIFY_APP="/Applications/Utilities/DEPNotify.app"
@@ -1403,30 +1574,30 @@ dep_notify_cleanup() {
     DEPNOTIFY_INST_ERR="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.err"
     DEPNOTIFY_INST_OUT="$DEPNOTIFY_TMP/dep-notify-start-enrollment-installer.sh.out"
 
-    wait_for_depnotify_done (){
-    # Wait for the user to press the Get Started button.
-    until [ -f "$DEPNOTIFY_DONE" ]; do
-        logging "DEPNotify Cleanup: Waiting for $DEPNOTIFY_DONE"
-        logging "DEPNotify Cleanup: The user has not clicked Get Started ..."
-        logging "DEPNotify Cleanup: Waiting 1 second ..."
-        /bin/sleep 1
-    done
-    }
 
+    wait_for_completion() {
+    	# Wait for the user to press the Logout button.
+    	while [ ! -f "$DEPNOTIFY_LOGOUT" ] || [ ! -f "$DEPNOTIFY_DONE" ]; do
+    		logging "Cleanup: Waiting for Completion file ..."
+    		logging "Cleanup: The user has not closed the DEPNotify window ..."
+    		logging "Cleanup: Waiting 1 second ..."
+    		/bin/sleep 1
+    		if [ -f "$DEPNOTIFY_DONE" ]; then
+    			logging "Cleanup: Found $DEPNOTIFY_DONE"
+    			break
+    		fi
 
-    wait_for_depnotify_logout() {
-        # Wait for the user to press the Logout button.
-        until [ -f "$DEPNOTIFY_LOGOUT" ]; do
-            logging "DEPNotify Cleanup: Waiting for $DEPNOTIFY_LOGOUT"
-            logging "DEPNotify Cleanup: The user has not clicked Logout ..."
-            logging "DEPNotify Cleanup: Waiting 1 second ..."
-            /bin/sleep 1
-        done
+    		if [ -f "$DEPNOTIFY_LOGOUT" ]; then
+    			logging "Cleanup: Found $DEPNOTIFY_LOGOUT"
+    			break
+    		fi
+    	done
     }
 
 
     remove_depnotify_daemon (){
-        # Unload and remove the LaunchDaemon
+        # Remove the LaunchDaemon
+        # This will prevent DEPNotify from launching again after a reboot.
         if [ -e "$DEPNOTIFY_DAEMON" ]; then
             # The LaunchDaemon file exists
             logging "DEPNotify Cleanup: Removing DEPNotify LaunchDaemon"
@@ -1477,99 +1648,21 @@ dep_notify_cleanup() {
     }
 
     logging "-- Start DEPNotify cleanup --"
-    logging "DEPNotify Cleanup: Script version $VERSION"
 
-    # Check to see which DEPNotify continue option was selected.
-    if [ "$COMPLETE_METHOD_DROPDOWN_ALERT" = true ]; then
-        # Continue with logout
-        remove_depnotify_daemon
-        remove_depnotify_collateral
-        logging "-- End DEPNotify Cleanup --"
-    else
-        # Regular continue
-        wait_for_depnotify_done
-        remove_depnotify_daemon
-        remove_depnotify_collateral
-        logging "-- End DEPNotify Cleanup --"
-    fi
-}
+    # Call functions
+    wait_for_completion
+    remove_depnotify_daemon
+    remove_depnotify_collateral
 
-
-create_stub_file() {
-    # Create the a stub file
-    #
-    # Set the name of the stub file to your liking or pass the name of a stub
-    # to this function as the $1 builtin.
-    #
-    # While the stub file does not exist, create it.
-    # Force device checkin to jamf to initiate extension attribute
-    # If the stub file exists, move the device to the "Enrollment Complete"
-    # SmartGroup so that the wifi profile payload will come down.
-    # Otherwise, continue checking for the stub file
-
-    if [ "$1" != "" ]; then
-        STUB_FILE_NAME="$1"
-        logging "Using function arg"
-    else
-        STUB_FILE_NAME=".enrollment_complete.txt"
-    fi
-
-    stub_file_path="/Users/Shared/$STUB_FILE_NAME"
-
-    while [ ! -f "$stub_file_path" ]; do
-        # Create STUB file
-        logging "Laying down $STUB_FILE_NAME stub file"
-        /usr/bin/touch "$stub_file_path"
-
-        # Set the stub location
-        stub_file_path="/Users/Shared/$STUB_FILE_NAME"
-
-        if [ -f "$stub_file_path" ]; then
-            logging "$STUB_FILE_NAME Stub file found!!!"
-
-        else
-            logging "Still looking for $STUB_FILE_NAME stub file ..."
-            /bin/sleep 1
-            /usr/bin/touch "$stub_file_path"
-
-        fi
-
-    done
-
-}
-
-
-reboot_me() {
-    # Rebooting to complete provisioning
-    "$JAMF_BINARY" policy -event enrollment-complete-reboot | \
-        /usr/bin/sed -e "s/^/$DATE/" | \
-        /usr/bin/tee -a "$LOG_PATH" > /dev/null 2>&1
+    logging "-- End DEPNotify Cleanup --"
 }
 
 
 ###############################################################################
 ###############################################################################
-####   MAING SCRIPT: DO NOT EDIT BELOW THIS LINE
+####   MAIN SCRIPT: DO NOT EDIT BELOW THIS LINE
 ###############################################################################
 ###############################################################################
-
-
-SCRIPT_NAME=$(/usr/bin/basename "$0" | /usr/bin/awk -F "." '{print $1}')
-
-# Binaries
-DEFAULTS="/usr/bin/defaults"
-FDESETUP_BINARY="/usr/bin/fdesetup"
-JAMF_BINARY="/usr/local/bin/jamf"
-
-# Log files
-LOG_FILE="enrollment-$(date +"%Y-%m-%d").log"
-LOG_PATH="/Library/Logs/$LOG_FILE"
-DATE=$(date +"[%b %d, %Y %Z %T INFO]")
-DEP_NOTIFY_APP="/Applications/Utilities/DEPNotify.app"
-DEP_NOTIFY_LOG="/var/tmp/depnotify.log"
-DEP_NOTIFY_DEBUG="/var/tmp/depnotifyDebug.log"
-DEP_NOTIFY_DONE="/var/tmp/com.depnotify.provisioning.done"
-
 
 # Pulling from Policy parameters to allow true/false flags to be set. More
 # info can be found on
@@ -1594,34 +1687,43 @@ if [ "${10}" != "" ]; then REGISTRATION_ENABLED="${10}"; fi
 if [ "${11}" != "" ]; then JAMF_CONNECT_ENABLED="${11}"; fi
 
 
-#
-# Standard Testing Mode Enhancements
-#
-
-if [ "$TESTING_MODE" = true ]; then
-
-    # Removing old config file if present (Testing Mode Only)
-    if [ -f "$DEP_NOTIFY_LOG" ]; then rm "$DEP_NOTIFY_LOG"; fi
-    if [ -f "$DEP_NOTIFY_DONE" ]; then rm "$DEP_NOTIFY_DONE"; fi
-    if [ -f "$DEP_NOTIFY_DEBUG" ]; then rm "$DEP_NOTIFY_DEBUG"; fi
-
-    # Setting Quit Key set to command + control + x (Testing Mode Only)
-    echo "Command: QuitKey: x" >> "$DEP_NOTIFY_LOG"
-fi
-
-
 main() {
     # Main function
 
-    logging ""
-    logging "--- BEGIN DEVICE ENROLLMENT LOG ---"
-    logging ""
-    logging "$SCRIPT_NAME Version ${VERSION}"
-    logging ""
+    SCRIPT_NAME=$(/usr/bin/basename "$0" | /usr/bin/awk -F "." '{print $1}')
+
+    # Binaries
+    DEFAULTS="/usr/bin/defaults"
+    FDESETUP_BINARY="/usr/bin/fdesetup"
+    JAMF_BINARY="/usr/local/bin/jamf"
+
+    # Log files
+    LOG_FILE="enrollment-$(date +"%Y-%m-%d").log"
+    LOG_PATH="/Library/Logs/$LOG_FILE"
+    DATE=$(date +"[%b %d, %Y %Z %T INFO]")
+    DEP_NOTIFY_APP="/Applications/Utilities/DEPNotify.app"
+    DEP_NOTIFY_LOG="/var/tmp/depnotify.log"
+    DEP_NOTIFY_DEBUG="/var/tmp/depnotifyDebug.log"
+    DEP_NOTIFY_DONE="/var/tmp/com.depnotify.provisioning.done"
+
+    #
+    # Standard Testing Mode Enhancements
+    #
+
+    if [ "$TESTING_MODE" = true ]; then
+
+        # Removing old config file if present (Testing Mode Only)
+        if [ -f "$DEP_NOTIFY_LOG" ]; then rm "$DEP_NOTIFY_LOG"; fi
+        if [ -f "$DEP_NOTIFY_DONE" ]; then rm "$DEP_NOTIFY_DONE"; fi
+        if [ -f "$DEP_NOTIFY_DEBUG" ]; then rm "$DEP_NOTIFY_DEBUG"; fi
+
+        # Setting Quit Key set to command + control + x (Testing Mode Only)
+        echo "Command: QuitKey: x" >> "$DEP_NOTIFY_LOG"
+    fi
+
 
     # Adding Check and Warning if Testing Mode is off and BOM files exist
-    if [[ ( -f "$DEP_NOTIFY_LOG" || \
-        -f "$DEP_NOTIFY_DONE" ) && \
+    if [[ ( -f "$DEP_NOTIFY_LOG" || -f "$DEP_NOTIFY_DONE" ) && \
         "$TESTING_MODE" = false ]]; then
 
         echo "$DATE: TESTING_MODE set to false but config files were found in /var/tmp. Letting user know and exiting." >> "$DEP_NOTIFY_DEBUG"
@@ -1632,14 +1734,20 @@ main() {
         echo "Command: MainText: $ERROR_MAIN_TEXT" >> "$DEP_NOTIFY_LOG"
         echo "Status: $ERROR_STATUS" >> "$DEP_NOTIFY_LOG"
 
-        sudo -u "$CURRENT_USER" \
-            open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
 
         /bin/sleep 5
 
         exit 1
     fi
 
+    logging ""
+    logging "--- BEGIN DEVICE ENROLLMENT LOG ---"
+    logging ""
+    logging "$SCRIPT_NAME Version $VERSION"
+    logging ""
 
     validate_true_false_flags
     get_setup_assistant_process
@@ -1650,22 +1758,27 @@ main() {
         # If this is not enabled then there is no reason to run the function.
         check_jamf_connect_login
     else
-        printf "Enrollment Script: Not using Jamf Connect ...\n"
-        logging "Enrollment Script: Not using Jamf Connect ..."
+        logging "Not using Jamf Connect ..."
     fi
 
     # is_jamf_enrollment_complete
     check_for_dep_notify_app
     get_finder_process
-    get_current_user_uid
+
+    # Grab the current logged-in user and the uid
+    current_user="$(get_current_user)"
+    current_user_uid="$(get_current_user_uid $current_user)"
+
+    logging "Current User: $cu"
+    logging "Current User UID: $current_user_uid"
 
     if [ "$SELF_SERVICE_CUSTOM_BRANDING" = true ]; then
         # If this is not enabled then there is no reason to run the function.
-        self_service_custom_branding
+        self_service_custom_branding "$current_user"
     fi
 
-    general_plist_config
-    launch_dep_notify_app
+    general_plist_config "$current_user"
+    launch_dep_notify_app "$current_user"
     get_dep_notify_process
 
 
@@ -1681,7 +1794,7 @@ main() {
 
     if [ "$EULA_ENABLED" = true ]; then
         # If this is not enabled then there is no reason to run the function.
-        eula_configuration
+        eula_configuration "$current_user"
         eula_logic
     fi
 
@@ -1690,10 +1803,20 @@ main() {
         registration_window_display_logic
     fi
 
-    install_policies
+    # Policy installation
+    if [ -n "$APP_ICON_ARRAY" ]; then
+        # Check to see if there is an anything in the first position of the array. If
+        # so we want to install the policies and change the app icon in the DEPNotify
+        # windwow as well.
+        install_policies_with_icon
+    else
+        # Install the policies without updating the icon in DEPNotify
+        install_policies
+    fi
+
     set_computer_name
 
-    if [ "$UPDATE_USERNAME_INVENTORY_RECORD" = true ]; then
+    if [ "$UPDATE_USERNAME_INVENTORY_RECORD_ENABLED" = true ]; then
         # If this is not enabled then there is no reason to run the function.
         update_username_in_jamf_cloud
     fi
@@ -1709,18 +1832,33 @@ main() {
     lock_login_keychain
     create_stub_file ".enrollment_complete.txt"
     checkin_to_jamf
-    filevault_configuration
 
+	if [ "$SAP_PRIVILEGES_APP_ENABLED" = true ]; then
+		# Make sure that FileVault is enabled before installing Privileges
+		logging "SAP Privileges app is being used ..."
+
+		filevault_status="$(is_filevault_enabled)"
+		logging "FileVault status is: $filevault_status"
+
+		if [ "$filevault_status" = "active" ]; then
+			install_sap_privileges_app
+        else
+            install_sap_privileges_app
+		fi
+	fi
 
     # Nice completion text
     echo "Status: $INSTALL_COMPLETE_TEXT" >> "$DEP_NOTIFY_LOG"
 
+    filevault_configuration_status
+
     dep_notify_cleanup
 
-    if [ "$ENROLLMENT_COMPLETE_REBOOT" = true ]; then
+    if [ "$RESTART_ENABLED" = true ]; then
         # If the ENROLLMENT_COMPLETE_REBOOT setting is set to true at the top of
-        # this script we need to reboot.
-        reboot_me
+        # this script we will promt the user to restart.
+        logging "Getting ready to restart ..."
+        /bin/echo "Command: Restart: We need to restart to complete the setup ..."
     fi
 
     logging ""
