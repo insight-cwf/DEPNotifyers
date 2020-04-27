@@ -4,5 +4,5 @@ The repo is broken out into sections by platform. I started with Jamf becuase it
 
 ## Platforms
 
-- **[`jamf-depnotify-installer`](https://github.com/captam3rica/DEPNotifyers/tree/master/Jamf-DEPNotify)**
+- **[`jamf-depnotify-installer`](https://github.com/captam3rica/DEPNotifyers/tree/master/jamf-depnotify-installer)**
 - WSO UEM DEPNotify (Comming soon)
