@@ -63,11 +63,11 @@ The policies in this array will install in the order that they appear in the arr
 
 **General settings tab**
 
-![](Screenshots/start_depnotify_policy_general.png)
+![](screenshots/start_depnotify_policy_general.png)
 
 **Scripts payload tab**
 
-![](Screenshots/start_depnotify_policy_script.png)
+![](screenshots/start_depnotify_policy_script.png)
 
 **Policy Scope**
 
@@ -79,5 +79,5 @@ _Smart Group_
 
 _Scope_
 
-![](Screenshots/start_depnotify_policy_scope.png)
+![](screenshots/start_depnotify_policy_scope.png)
 
