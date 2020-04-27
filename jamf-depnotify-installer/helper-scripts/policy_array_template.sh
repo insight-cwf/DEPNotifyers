@@ -81,24 +81,3 @@ APP_ICON_ARRAY=(
 
 DEPNOTIFY_LOGOUT="/Users/captam3rica/Desktop/enrollment-this.log"
 DEPNOTIFY_DONE="/Users/captam3rica/Desktop/jamf.log"
-
-wait_for_completion() {
-	# Wait for the user to press the Logout button.
-	while [ ! -f "$DEPNOTIFY_LOGOUT" ] || [ ! -f "$DEPNOTIFY_DONE" ]; do
-		echo "Cleanup: Waiting for Completion file ..."
-		echo "Cleanup: The user has not closed the DEPNotify window ..."
-		echo "Cleanup: Waiting 1 second ..."
-		/bin/sleep 1
-		if [ -f "$DEPNOTIFY_DONE" ]; then
-			echo "Cleanup: Found $DEPNOTIFY_DONE"
-			break
-		fi
-
-		if [ -f "$DEPNOTIFY_LOGOUT" ]; then
-			echo "Cleanup: Found $DEPNOTIFY_LOGOUT"
-			break
-		fi
-	done
-}
-
-wait_for_completion
