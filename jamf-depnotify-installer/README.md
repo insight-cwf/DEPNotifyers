@@ -1,11 +1,6 @@
-# Jamf DEPNotify
+# jamf-depnotify-installer
 
 Use this repo to assist with deployment of **[DEPNotify](https://gitlab.com/Mactroll/DEPNotify)** in a Jamf MDM environment.
-
-## Scripts
-
-- `jamf-dep-notify-start-enrollment.sh` - Use as the enrollment script in your Jamf enrollment Policy. This should be policy executed by the DEPNotify post-install script.
-- `post-install.sh` - Use as the post-install script when repackaging the DEPNotify app for deployment.
 
 
 ## Jamf DEPNotify Re-Package
