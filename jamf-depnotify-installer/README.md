@@ -75,7 +75,7 @@ You can scope the policy to **All Computers/All Users** or create a Smart Group 
 
 _Smart Group_
 
-![](Screenshots/smart_group_has_jamf_pppc_profile.png)
+![](screenshots/smart_group_has_jamf_pppc_profile.png)
 
 _Scope_
 
