@@ -1,41 +1,39 @@
 #!/usr/bin/env bash
 
 # GitHub: @captam3rica
-VERSION=2.2.1
+VERSION=2.2.5
 
 #######################################################################################
 #
 # This Insight Software is provided by Insight on an "AS IS" basis.
 #
-# INSIGHT MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
-# THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE, REGARDING THE INSIGHT SOFTWARE OR ITS USE AND
-# OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
+# INSIGHT MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE
+# IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A PARTICULAR
+# PURPOSE, REGARDING THE INSIGHT SOFTWARE OR ITS USE AND OPERATION ALONE OR IN
+# COMBINATION WITH YOUR PRODUCTS.
 #
-# IN NO EVENT SHALL INSIGHT BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
-# OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION,
-# MODIFICATION AND/OR DISTRIBUTION OF THE INSIGHT SOFTWARE, HOWEVER CAUSED
-# AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
-# STRICT LIABILITY OR OTHERWISE, EVEN IF INSIGHT HAS BEEN ADVISED OF THE
+# IN NO EVENT SHALL INSIGHT BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) ARISING IN ANY
+# WAY OUT OF THE USE, REPRODUCTION, MODIFICATION AND/OR DISTRIBUTION OF THE INSIGHT
+# SOFTWARE, HOWEVER, CAUSED AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING
+# NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, EVEN IF INSIGHT HAS BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 #######################################################################################
 #
 #   DESCRIPTION
 #
-#       This script is designed to make the implementation of DEPNotify very
-#       easy with limited scripting knowledge. The section below has variables
-#       that may be modified to customize the end-user experience. DO NOT
-#       modify things in or below the CORE LOGIC area unless major testing and
-#       validation is performed.
+#       This script is designed to make the implementation of DEPNotify very easy with
+#       limited scripting knowledge. The section below has variables that may be
+#       modified to customize the end-user experience. DO NOT modify things in or below
+#       the CORE LOGIC area unless major testing and validation are performed.
 #
 #######################################################################################
 #
 #   CHANGELOG
 #
-#	- See the CHANGELOG file at https://github.com/icwfrepo/DEPNotifyers
+#	- See the CHANGELOG file at https://github.com/insight-cwf/DEPNotifyers
 #
 #######################################################################################
 
@@ -52,9 +50,8 @@ TESTING_MODE=true # Can be set to true or false
 ########################################################################################
 # Trigger to be used to call the policy
 ########################################################################################
-# Policies can be called be either a custom trigger or by policy id.
-# Select either event, to call the policy by the custom trigger,
-# or id to call the policy by id.
+# Policies can be called be either a custom trigger or by policy id. Select either
+# event, to call the policy by the custom trigger, or id to call the policy by id.
 TRIGGER="event"
 
 
@@ -64,11 +61,10 @@ TRIGGER="event"
 # The policy array must be formatted "Progress Bar text,customTrigger". These
 # will be run in order as they appear below.
 #
-# Where applicable, updated the array with applications that are being deployed
-# from Jamf during device enrollment. If the application already exists on the
-# device then we want to skip that app. This can happen is cases like re-
-# enrollment or if the device is pre-existing when the device is not wiped
-# prior to enrolling.
+# Where applicable, updated the array with applications that are being deployed from
+# Jamf during device enrollment. If the application already exists on the device then
+# we want to skip that app. This can happen is cases like re-enrollment or if the
+# device is pre-existing when the device is not wiped prior to enrolling.
 POLICY_ARRAY=(
     # "Installing Google Chrome Browser,google-chrome"
 )
@@ -77,17 +73,53 @@ POLICY_ARRAY=(
 #######################################################################################
 # (OPTIONAL) APP ICON ARRAY VARIABLE TO MODIFY
 #######################################################################################
-# The policy array must be formatted "App Name,/path/to/local/image.png". The App name
-# should be contained in both the App Icon Array and the Policy array so that the
-# script can determine which icon needs to be displayed.
 #
-# These icons should coinside with the order of the policy array above so that the
-# right App icon is displayed as the App is being installed. This array is not required.
+# The icon array must be formatted "App Name,/path/to/local/image.png". The same App
+# name should be contained in both the App Icon Array and the Policy array so that the
+# script can determine which icon needs to be displayed. The order of the icons in
+# the icon array must match the order of the policy array above so that the right App
+# icon is displayed as the App is being installed.
 #
-# These icon images will need to be deployed in the jamf-depnotify-installer package.
+# In the example below Google Chrome is contained in both the policy array and icon
+# array.
+#
+#   Example
+#
+#       - Policy array: "Installing Google Chrome Browser,google-chrome"
+#       - Icon array:   "Google Chrome,/path/to/google_chrome_browser_icon.png"
+#
+# The icon images (png format) will need to be included in the jamf-depnotify-installer
+# distribution package used to deploy DEPNotify during enrollment.
+#
+#   An example directory path to place the icons could be as follows where tmp is as
+#   the root (/) of the file system.
+#
+#       tmp
+#       │
+#       └───depnotify
+#           │
+#           └───icons
+#                   google_chrome_icon.png
+#                   firefox_icon.png
+#                   my_orgs_icon.png
+#
 APP_ICON_ARRAY=(
-    # "/tmp/depnotify/icons/citrix_workspace_icon.png"
+    # "Google Chrome,/tmp/depnotify/icons/google_chrome_browser_icon.png"
 )
+
+
+#######################################################################################
+# COMPUTER NAME
+#######################################################################################
+# Setting the COMPUTER_NAME_ENABLE varialbe to true will rename the Mac to the device
+# serial number. Otherwise the computer will be set to something like "John's MacBook"
+# or "Jane's iMacPro". Alternatively, you can set the computer name via MDM.
+COMPUTER_NAME_ENABLE=false
+
+# COMPUTER NAME PREFIX
+# Update the PREFIX varialbe below if you would like to prepend the Mac computer name
+# with a static prefix.
+PREFIX=""
 
 
 #######################################################################################
@@ -718,40 +750,6 @@ check_for_jamf_connect_login() {
 }
 
 
-get_finder_process (){
-    # Check to see if the Finder is running yet. If it is, continue. Nice for
-    # instances where the user is not setting up a username during the Setup
-    # Assistant process.
-
-    logging "Checking to see if the Finder process is running ..."
-    echo "$DATE Checking to see if the Finder process is running ..."
-    FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
-
-    RESPONSE=$?
-
-    logging "Finder PID: $FINDER_PROCESS"
-    echo "Finder PID: $FINDER_PROCESS"
-
-    while [[ $RESPONSE -ne 0 ]]; do
-
-        logging "Finder PID not found. Assuming device is sitting \
-            at the login window ..."
-        echo "$DATE: Finder PID not found. Assuming device is sitting \
-            at the login window ..."
-
-        /bin/sleep 1
-
-        FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
-        RESPONSE=$?
-
-        if [[ $FINDER_PROCESS != "" ]]; then
-            logging "Finder PID: $FINDER_PROCESS"
-            echo "$DATE: Finder PID: $FINDER_PROCESS"
-        fi
-    done
-}
-
-
 get_current_user() {
     # Return the current user
     printf '%s' "show State:/Users/ConsoleUser" | \
@@ -834,6 +832,40 @@ check_for_dep_notify_app() {
 }
 
 
+get_finder_process (){
+    # Check to see if the Finder is running yet. If it is, continue. Nice for
+    # instances where the user is not setting up a username during the Setup
+    # Assistant process.
+
+    logging "Checking to see if the Finder process is running ..."
+    echo "$DATE Checking to see if the Finder process is running ..."
+    FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
+
+    RESPONSE=$?
+
+    logging "Finder PID: $FINDER_PROCESS"
+    echo "Finder PID: $FINDER_PROCESS"
+
+    while [[ $RESPONSE -ne 0 ]]; do
+
+        logging "Finder PID not found. Assuming device is sitting \
+            at the login window ..."
+        echo "$DATE: Finder PID not found. Assuming device is sitting \
+            at the login window ..."
+
+        /bin/sleep 1
+
+        FINDER_PROCESS=$(/usr/bin/pgrep -l "Finder" 2> /dev/null)
+        RESPONSE=$?
+
+        if [[ $FINDER_PROCESS != "" ]]; then
+            logging "Finder PID: $FINDER_PROCESS"
+            echo "$DATE: Finder PID: $FINDER_PROCESS"
+        fi
+    done
+}
+
+
 is_jamf_enrollment_complete() {
     # Checks the Jamf enrollment status
     # Checks for the Jamf binary. Then, looks for the jamf.log file. Lastly,
@@ -876,72 +908,62 @@ is_jamf_enrollment_complete() {
 }
 
 
-launch_dep_notify_app (){
-    # Opening the DEPNotiy app after initial configuration
+self_service_custom_branding() {
+    # If SELF_SERVICE_CUSTOM_BRANDING is set to true. Loading the updated icon
+    #
+    # Args:
+    #   $1 - the current logged-in user.
+
     cu="$1"
 
-    logging "Opening DEPNotify app ..."
+    # Self Service Process ID
+    SELF_SERVICE_PID=""
 
-    if [ "$FULLSCREEN" = true ]; then
-        sudo -u "$cu" \
-        sudo -u "$cu" \
-        sudo -u "$cu" \
-            open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG" -fullScreen
+    while [ -z "$SELF_SERVICE_PID" ]; do
+        # Wait for Jamf Self Service to launch
 
-    elif [ "$FULLSCREEN" = false ]; then
-        sudo -u "$cu" \
-        sudo -u "$cu" \
-        sudo -u "$cu" \
-            open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        logging "Jamf Self Service has not opened yet ..."
 
-    fi
-}
+        # Make sure that Jamf Self Service is present in the Applications directory
+        # before attempting to launch the app.
+        if [ -d "/Applications/$SELF_SERVICE_APP_NAME" ]; then
+            logging "Attempting to open Jamf Self Service ..."
 
+            # Seeing if this resolves LSOpenURLsWithRole() failed with error -10810
+            /usr/bin/open -a "/Applications/$SELF_SERVICE_APP_NAME" --hide
+        fi
 
-caffeinate_this() {
-    # Using Caffeinate binary to keep the computer awake if enabled
-    if [ "$NO_SLEEP" = true ]; then
-        logging "Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
-        caffeinate -disu -w "$DEP_NOTIFY_PROCESS"&
-    fi
-}
+        # Sleep for a second
+        /bin/sleep 3
 
-
-get_dep_notify_process (){
-    # Grabbing the DEP Notify Process ID for use later
-    DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
-
-    until [ "$DEP_NOTIFY_PROCESS" != "" ]; do
-
-        /bin/echo "$DATE: Waiting for DEPNotify to start to gather the process ID." >> "$DEP_NOTIFY_DEBUG"
-        /bin/sleep 1
-        DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
+        # Get Self Service PID again
+        SELF_SERVICE_PID=$(pgrep -l "$(echo "$SELF_SERVICE_APP_NAME" | \
+            /usr/bin/cut -d "." -f1)" | \
+            /usr/bin/cut -d " " -f1)
 
     done
 
-    /bin/echo "$DEP_NOTIFY_PROCESS"
-
-    caffeinate_this "$DEP_NOTIFY_PROCESS"
-}
-
-
-self_service_custom_branding() {
-    # If SELF_SERVICE_CUSTOM_BRANDING is set to true. Loading the updated icon
-    open -a "/Applications/$SELF_SERVICE_APP_NAME" --hide
-
-    cu="$1"
-
-    # Loop waiting on the branding image to properly show in the users
-    # library
+    # Loop waiting on the branding image to properly show in the users library
     CUSTOM_BRANDING_PNG="/Users/$cu/Library/Application Support/com.jamfsoftware.selfservice.mac/Documents/Images/brandingimage.png"
 
-    until [ -f "$CUSTOM_BRANDING_PNG" ]; do
+    counter=1
+
+    while [ ! -f "$CUSTOM_BRANDING_PNG" ] && [ "$counter" -le 11 ]; do
         echo "$DATE: Waiting for branding image from Jamf Pro." >> "$DEP_NOTIFY_DEBUG"
         /bin/sleep 1
+        counter=$((counter+1))
     done
 
     # Setting Banner Image for DEP Notify to Self Service Custom Branding
-    BANNER_IMAGE_PATH="$CUSTOM_BRANDING_PNG"
+    # Make sure that the brandingimage was found. If not
+    if [ -f "$CUSTOM_BRANDING_PNG" ]; then
+        #statements
+        BANNER_IMAGE_PATH="$CUSTOM_BRANDING_PNG"
+
+    else
+        BANNER_IMAGE_PATH="$BANNER_IMAGE_PATH"
+    fi
+
 
     # Setting custom image if specified
     if [ "$BANNER_IMAGE_PATH" != "" ]; then
@@ -959,13 +981,16 @@ self_service_custom_branding() {
     fi
 
     # Closing Self Service
-    SELF_SERVICE_PID=$(pgrep -l "$(echo "$SELF_SERVICE_APP_NAME" | \
+    SELF_SERVICE_PID=$(pgrep -l "$(/bin/echo "$SELF_SERVICE_APP_NAME" | \
         /usr/bin/cut -d "." -f1)" | \
         /usr/bin/cut -d " " -f1)
 
     echo "$DATE: Self Service custom branding icon has been loaded. Killing Self Service PID $SELF_SERVICE_PID." >> "$DEP_NOTIFY_DEBUG"
 
+    logging "Killing Jamf Self Service app ..."
     kill "$SELF_SERVICE_PID"
+
+    /bin/sleep 3
 }
 
 
@@ -1013,6 +1038,50 @@ general_plist_config() {
     # Changing Ownership of the plist file
     chown "$cu":staff "$DEP_NOTIFY_CONFIG_PLIST"
     chmod 600 "$DEP_NOTIFY_CONFIG_PLIST"
+}
+
+
+launch_dep_notify_app (){
+    # Opening the DEPNotiy app after initial configuration
+    cu="$1"
+
+    logging "Opening DEPNotify app ..."
+
+    if [ "$FULLSCREEN" = true ]; then
+        sudo -u "$cu" /usr/bin/open -a \
+            "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG" -fullScreen
+
+    elif [ "$FULLSCREEN" = false ]; then
+        sudo -u "$cu" /usr/bin/open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+
+    fi
+}
+
+
+caffeinate_this() {
+    # Using Caffeinate binary to keep the computer awake if enabled
+    if [ "$NO_SLEEP" = true ]; then
+        logging "Caffeinating DEP Notify process. Process ID: $DEP_NOTIFY_PROCESS\n" >> "$DEP_NOTIFY_DEBUG"
+        caffeinate -disu -w "$DEP_NOTIFY_PROCESS"&
+    fi
+}
+
+
+get_dep_notify_process (){
+    # Grabbing the DEP Notify Process ID for use later
+    DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
+
+    until [ "$DEP_NOTIFY_PROCESS" != "" ]; do
+
+        /bin/echo "$DATE: Waiting for DEPNotify to start to gather the process ID." >> "$DEP_NOTIFY_DEBUG"
+        /bin/sleep 1
+        DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
+
+    done
+
+    /bin/echo "$DEP_NOTIFY_PROCESS"
+
+    caffeinate_this "$DEP_NOTIFY_PROCESS"
 }
 
 
@@ -1359,43 +1428,38 @@ install_policies_with_icon() {
 }
 
 
-for policy in "${POLICY_ARRAY[@]}"; do
-
-	policy_status=$(/bin/echo "$policy" | cut -d ',' -f1)
-
-	for icon in "${APP_ICON_ARRAY[@]}"; do
-
-		app_icon_name=$(/bin/echo "$icon" | cut -d ',' -f1)
-		app_icon_path=$(/bin/echo "$icon" | cut -d ',' -f2)
-
-		if printf "%s" "$policy_status" | /usr/bin/grep -q -i "$app_icon_name"; then
-			echo "$app_icon_path"
-
-		fi
-
-	done
-
-done
-
-
 set_computer_name () {
     # Set the computer name
+
+    # Leave this blank if a prefix is not desired
+    prefix="$PREFIX"
 
     # Store device serial number
     serial_number=$(/usr/sbin/system_profiler SPHardwareDataType | \
             /usr/bin/awk '/Serial\ Number\ \(system\)/ {print $NF}')
 
+	name="$prefix$serial_number"
+
     logging "Setting computer name to: $serial_number"
 
     # Set device name using scutil
-    /usr/sbin/scutil --set ComputerName "$serial_number"
-    /usr/sbin/scutil --set LocalHostName "$serial_number"
-    /usr/sbin/scutil --set HostName "$serial_number"
+    /usr/sbin/scutil --set ComputerName "$name"
+    /usr/sbin/scutil --set LocalHostName "$name"
+    /usr/sbin/scutil --set HostName "$name"
 
-    # Set device name using jamf binary to make sure of the correct name
-    "$JAMF_BINARY" setComputerName -useSerialNumber
+     # Set device name using jamf binary to make sure of the correct name
+    "$JAMF" setComputerName -name "$name"
+    ret="$?"
+
+    if [ "$ret" -ne 0 ]; then
+        # Naming failed
+        printf "Failed to set computer name with jamf name command ...\n"
+        RETURN_CODE="$ret"
+    fi
 
 }
+
+
 
 
 update_username_in_jamf_cloud() {
@@ -1711,7 +1775,6 @@ main() {
     #
 
     if [ "$TESTING_MODE" = true ]; then
-
         # Removing old config file if present (Testing Mode Only)
         if [ -f "$DEP_NOTIFY_LOG" ]; then rm "$DEP_NOTIFY_LOG"; fi
         if [ -f "$DEP_NOTIFY_DONE" ]; then rm "$DEP_NOTIFY_DONE"; fi
@@ -1719,28 +1782,6 @@ main() {
 
         # Setting Quit Key set to command + control + x (Testing Mode Only)
         echo "Command: QuitKey: x" >> "$DEP_NOTIFY_LOG"
-    fi
-
-
-    # Adding Check and Warning if Testing Mode is off and BOM files exist
-    if [[ ( -f "$DEP_NOTIFY_LOG" || -f "$DEP_NOTIFY_DONE" ) && \
-        "$TESTING_MODE" = false ]]; then
-
-        echo "$DATE: TESTING_MODE set to false but config files were found in /var/tmp. Letting user know and exiting." >> "$DEP_NOTIFY_DEBUG"
-
-        mv "$DEP_NOTIFY_LOG" "/var/tmp/depnotify_old.log"
-
-        echo "Command: MainTitle: $ERROR_BANNER_TITLE" >> "$DEP_NOTIFY_LOG"
-        echo "Command: MainText: $ERROR_MAIN_TEXT" >> "$DEP_NOTIFY_LOG"
-        echo "Status: $ERROR_STATUS" >> "$DEP_NOTIFY_LOG"
-
-        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
-        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
-        sudo -u "$CURRENT_USER" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
-
-        /bin/sleep 5
-
-        exit 1
     fi
 
     logging ""
@@ -1752,7 +1793,7 @@ main() {
     validate_true_false_flags
     get_setup_assistant_process
 
-
+    # See if Jamf Connect is being installed as a part of this deployment.
     if [ "$JAMF_CONNECT_ENABLED" = true ]; then
         # We are using Jamf Connect
         # If this is not enabled then there is no reason to run the function.
@@ -1769,9 +1810,31 @@ main() {
     current_user="$(get_current_user)"
     current_user_uid="$(get_current_user_uid $current_user)"
 
-    logging "Current User: $cu"
+    logging "Current User: $current_user"
     logging "Current User UID: $current_user_uid"
 
+    # Adding Check and Warning if Testing Mode is off and BOM files exist
+    if [[ ( -f "$DEP_NOTIFY_LOG" || -f "$DEP_NOTIFY_DONE" ) && \
+        "$TESTING_MODE" = false ]]; then
+
+        echo "$DATE: TESTING_MODE set to false but config files were found in /var/tmp. Letting user know and exiting." >> "$DEP_NOTIFY_DEBUG"
+
+        mv "$DEP_NOTIFY_LOG" "/var/tmp/depnotify_old.log"
+
+        echo "Command: MainTitle: $ERROR_BANNER_TITLE" >> "$DEP_NOTIFY_LOG"
+        echo "Command: MainText: $ERROR_MAIN_TEXT" >> "$DEP_NOTIFY_LOG"
+        echo "Status: $ERROR_STATUS" >> "$DEP_NOTIFY_LOG"
+
+        sudo -u "$current_user" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        sudo -u "$current_user" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+        sudo -u "$current_user" open -a "$DEP_NOTIFY_APP" --args -path "$DEP_NOTIFY_LOG"
+
+        /bin/sleep 5
+
+        exit 1
+    fi
+
+    # See if the Self Service branding is enabled.
     if [ "$SELF_SERVICE_CUSTOM_BRANDING" = true ]; then
         # If this is not enabled then there is no reason to run the function.
         self_service_custom_branding "$current_user"
@@ -1814,13 +1877,20 @@ main() {
         install_policies
     fi
 
-    set_computer_name
+    # Check to see if we are setting the computer name.
+    if [ "$COMPUTER_NAME_ENABLE" = true ]; then
+        set_computer_name
+    fi
 
+    # Check to see if we are updating the assigned user in the computer inventory
+    # record.
     if [ "$UPDATE_USERNAME_INVENTORY_RECORD_ENABLED" = true ]; then
         # If this is not enabled then there is no reason to run the function.
         update_username_in_jamf_cloud
     fi
 
+    # Check to see if we are binding this Mac to and Active Directory domain via Jamf
+    # policy.
     if [ "$DIRECTORY_BINDING_ENABLED" = true ]; then
         # If the seconfdary option DIRECTORY_BINDING_ENABLED is set to true.
         # Call a Jamf Pro policy to bind the Mac to AD during the enrollment
@@ -1833,6 +1903,7 @@ main() {
     create_stub_file ".enrollment_complete.txt"
     checkin_to_jamf
 
+    # Check to see if we are installing SAP Privileges as a part of the deployment.
 	if [ "$SAP_PRIVILEGES_APP_ENABLED" = true ]; then
 		# Make sure that FileVault is enabled before installing Privileges
 		logging "SAP Privileges app is being used ..."
@@ -1854,6 +1925,7 @@ main() {
 
     dep_notify_cleanup
 
+    # Check to see if a restart policy is set for this deployment.
     if [ "$RESTART_ENABLED" = true ]; then
         # If the ENROLLMENT_COMPLETE_REBOOT setting is set to true at the top of
         # this script we will promt the user to restart.
