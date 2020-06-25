@@ -15,11 +15,28 @@ and this project adheres to Year Notation Versioning.
 - `Security` in case of vulnerabilities.
 
 
-## [v2.2.1] - 2020-04-
+## [v2.2.5] - 2020-06-25
+
+- **Added** - Additional clarification added to the `APP_ICON_ARRAY` description to explain the concept a bit better, and added example directory structure for placing app icon images in the DEPNotify Distribution package.
+- **Changed** - Instead of setting the Mac computer name to the serial number by default you can now toggle this function on by setting `COMPUTER_NAME_ENABLE` to `true`. If this option is not enabled the Mac will be named something like `John's MacBook Pro` or `Jane's iMac Pro`. Alternatively, you can set the device name via MDM.
+    - **Added** - Ability to set a prefix to the computer name. This requires that the `COMPUTER_NAME_ENABLE` option be set to `true.`
+- **Changed** - Refactored code for readability.
+
+## [v2.2.3] - 2020-06-05
+
+- **Changed** - Refactored and restructured `jamf_depnotify_start.sh` logic.
+
+
+## [v2.2.2] - 2020-05-26
+
+- **Added** - Added logic to ensure that the Jamf Self Service app is launched if custom branding is being used. Saw some instances in macOS Catalina where the Self Service app would never launch during device configuration and this would prevent DEPNotify from launching as well. 
+
+
+## [v2.2.1] - 2020-04-30
 
 - **Changed** - A bunch of code refactoring for readability.
 - **Changed** - Moved unnecessary logging out of individual functions and into the main function call.
-- **Changed** how the `dep_notify_clean` function checked for the the `.logout` and `.done` DEPNotify files.
+- **Changed** - now the `dep_notify_clean` function checked for the the `.logout` and `.done` DEPNotify files.
 - **Fixed** minor bugs.
 
 
