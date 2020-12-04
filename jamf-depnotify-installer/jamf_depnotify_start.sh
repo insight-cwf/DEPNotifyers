@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # GitHub: @captam3rica
-VERSION=2.2.5
+VERSION=2.2.6
 
 #######################################################################################
 #
@@ -1045,6 +1045,12 @@ launch_dep_notify_app (){
     # Opening the DEPNotiy app after initial configuration
     cu="$1"
 
+    # Updated for Big Sur due to macOS yelling before launching DEPNotify and asking
+    # the end-user if they would like to open the app due to the app being downloaded
+    # from the internet at some point.
+    logging "Removing the quarantine bit from the DEPNotify app ..."
+    sudo xattr -r -d com.apple.quarantine /Applications/Utilities/DEPNotify.app
+
     logging "Opening DEPNotify app ..."
 
     if [ "$FULLSCREEN" = true ]; then
@@ -1440,7 +1446,7 @@ set_computer_name () {
 
 	name="$prefix$serial_number"
 
-    logging "Setting computer name to: $serial_number"
+    logging "Setting computer name to: $name"
 
     # Set device name using scutil
     /usr/sbin/scutil --set ComputerName "$name"
@@ -1458,8 +1464,6 @@ set_computer_name () {
     fi
 
 }
-
-
 
 
 update_username_in_jamf_cloud() {
