@@ -40,17 +40,17 @@ Create a Signing Certificate with Jamf Pro
 1. The browser should automatically download a signed certificate file to your computer. (Typically the Downloads folder by default)
 1. The file should have a .pem extension.
 1. Double-click the cert file to open it.
-1. If prompted to add the cert to a Keychain make sure that the login keychain is selected in the Keychain drop down. Then click Add.
+1. If prompted to add the cert to a Keychain make sure that the login keychain is selected in the Keychain dropdown. Then click Add.
 1. From within the Keychain Access app select the login keychain then in the bottom left select My Certificates.
 1. In the list, you should see the certificate that was just imported.
 1. The see the private key associated with the cert that was just imported select the little disclosure triangle to the left of the cert.
 1. If the Mac used to generate the CSR is enrolled in your Jamf instance then it will trust the certificate created by the CSR. If not you will need to modify the Trust settings
 
     1. Double-clicking the cert
-    1. Click the disclosure triangle next the When using this certificate and select Always Trust.
+    1. Click the disclosure triangle next to the When using this certificate and select Always Trust.
     1. Choose File > Close.
     1. Enter your credentials on the You are making changes to your Certificate Trust Settings" dialogue.
-    1. Make sure that the cert is trusted by looking for the green check mark icon saying this cert is valid.
+    1. Make sure that the cert is trusted by looking for the green checkmark icon saying this cert is valid.
     
 1. (optional) Export the cert and apply a password as a backup for use on another Mac.
 1. Quit Keychain Access
