@@ -21,10 +21,6 @@ Requirements
     The cert can either be an Apple Developer Cert or a cert downloaded from your Jamf Cloud tenant.
 
 
-Create a Signing Cert
-===
-
-
 Build the Installer Package
 ===
 
@@ -113,7 +109,7 @@ The policies in this array will install in the order that they appear in the arr
 Jamf Policies
 ===
 
-**NOTE:** Make sure to upload `jamf-dep-notify-start-enrollment.sh` to Jamf as a script before creating the policies.
+**NOTE:** Make sure to upload `jamf_depnotify_start.sh` to Jamf as a script before creating the policies.
 
 ### Jamf DEPNotify Start Enrollment
 
