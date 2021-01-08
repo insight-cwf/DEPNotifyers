@@ -42,8 +42,10 @@ Create a Signing Certificate with Jamf Pro
 1. Select the Management Certificate Template tab and select the Create Certificate from CSR button.
 1. Click inside the text field so that it is in focus. Then, paste the CSR text block that you copied earlier.
 1. In the Certificate Type menu select Web Server Certificate then click the Create button.
-1. The browser should automatically download a signed certificate file to your computer. (Typically the Downloads folder by default)
-1. The file should have a .pem extension.
+1. The browser should automatically download a signed certificate file, in .pem format, to your computer. (Typically the Downloads folder by default)
+
+### Import the Cert to the Mac Keychain
+
 1. Double-click the cert file to open it.
 1. If prompted to add the cert to a Keychain make sure that the login keychain is selected in the Keychain dropdown. Then click Add.
 1. From within the Keychain Access app select the login keychain then in the bottom left select My Certificates.
