@@ -14,7 +14,7 @@ Requirements
 - A copy of the **[DEPNotify](https://gitlab.com/Mactroll/DEPNotify)** installer package.
 - A macOS package builder.
 
-    This repo uses [Packages](http://s.sudre.free.fr/Software/Packages/about.html), but there are others that can be used as well.
+    This repo uses [Packages](http://s.sudre.free.fr/Software/Packages/about.html),but there are others like [munki-pkg](https://github.com/munki/munki-pkg) that can be used as well.
     
 - A certificate that can be used to sign Installer packages.
 
