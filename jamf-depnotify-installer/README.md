@@ -23,6 +23,8 @@ Requirements
 Create a Signing Certificate with Jamf Pro
 ===
 
+### Create the Certificate Signing Request (CSR)
+
 1. On a Mac, open Keychain Access
 1. Click on Keychain Access > Certificate Assistant > Request a Certificate From a Certificate Authority ...
 1. Enter an email address for your organization
@@ -33,6 +35,9 @@ Create a Signing Certificate with Jamf Pro
 1. In Finder, go to the location where you saved the CSR.
 1. Right-click the file then select Open With > TextEdit.
 1. In the text file select and copy everything including the "-----BEGIN CERTIFICATE REQUEST-----" and "-----BEGIN CERTIFICATE REQUEST-----"
+
+### Generate the Signing Cert in Jamf Pro
+
 1. Now go to the Jamf Pro console in a Web Browser and go to Settings > Global Management > PKI Certificates
 1. Select the Management Certificate Template tab and select the Create Certificate from CSR button.
 1. Click inside the text field so that it is in focus. Then, paste the CSR text block that you copied earlier.
