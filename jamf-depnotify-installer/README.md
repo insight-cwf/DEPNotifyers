@@ -67,7 +67,7 @@ If you plan on displaying icons in DEPNotify as the Mac is being configured buil
 
 An easy way to do this is to create the folder structure on your Mac then drag the top level folder into the Package Payload tab.
 
-![](screenshots/optional_adding_icons.gif)
+![](screenshots/optional_adding_icons@2x.png)
 
 ### Scripts Tab
 
